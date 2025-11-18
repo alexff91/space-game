@@ -1,0 +1,31 @@
+{
+  "name": "astronomy-discovery-game",
+  "version": "1.0.0",
+  "description": "An online game platform for analyzing astronomical images and contributing to space research",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "install:all": "npm install && npm install --workspace=frontend && npm install --workspace=backend",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "test": "npm run test --workspace=frontend && npm run test --workspace=backend"
+  },
+  "keywords": [
+    "astronomy",
+    "citizen-science",
+    "space",
+    "gamification",
+    "nasa",
+    "image-analysis"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
