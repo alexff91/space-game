@@ -17,6 +17,9 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import imageRoutes from './routes/images';
 import annotationRoutes from './routes/annotations';
+import missionRoutes from './routes/missions';
+import streakRoutes from './routes/streak';
+import commentRoutes from './routes/comments';
 
 const app: Application = express();
 
@@ -64,6 +67,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/annotations', annotationRoutes);
+app.use('/api/missions', missionRoutes);
+app.use('/api/streak', streakRoutes);
+app.use('/api/comments', commentRoutes);
 
 // API documentation
 app.get('/api', (req, res) => {
@@ -76,6 +82,9 @@ app.get('/api', (req, res) => {
       users: '/api/users',
       images: '/api/images',
       annotations: '/api/annotations',
+      missions: '/api/missions',
+      streak: '/api/streak',
+      comments: '/api/comments',
     },
     documentation: 'https://github.com/your-repo/docs',
   });

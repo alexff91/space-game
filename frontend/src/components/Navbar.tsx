@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Telescope, User, Trophy, LogOut, Star } from 'lucide-react';
+import { Telescope, User, Trophy, LogOut, Star, Target } from 'lucide-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -30,6 +30,13 @@ export default function Navbar() {
                 >
                   <Star className="w-5 h-5" />
                   <span>Explore</span>
+                </Link>
+                <Link
+                  to="/missions"
+                  className="flex items-center space-x-1 text-gray-300 hover:text-primary-400 transition-colors"
+                >
+                  <Target className="w-5 h-5" />
+                  <span>Missions</span>
                 </Link>
                 <Link
                   to="/leaderboard"
