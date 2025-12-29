@@ -8,12 +8,34 @@ This platform transforms space image analysis into an engaging game, empowering 
 
 ## Features
 
+### Core Features
 - **Real Astronomical Data**: Integration with NASA, ESA, and Hubble image databases
 - **Interactive Annotation**: Web-based image viewer with zoom, pan, and annotation tools
-- **Gamification**: Points, badges, levels, and missions to encourage engagement
 - **Consensus Building**: Aggregate user annotations to identify potential discoveries
 - **Educational Content**: Learn about astronomy while contributing to research
+
+### Gamification & Engagement
+- **Points & Levels**: Earn points for annotations, level up to unlock achievements
+- **Daily Challenges**: New challenges every day with special rewards
+- **Missions System**: Long-term objectives with progress tracking
+- **Streak System**: Daily login rewards with streak freezing
+- **Leaderboard**: Compete with other citizen scientists
+
+### Social Features
+- **Comments**: Discuss findings with other users
+- **Likes**: Engage with community observations
+- **Sharing**: Share interesting discoveries
+
+### User Experience
+- **Interactive Tutorial**: 7-step onboarding for new users
+- **Educational Panels**: Contextual learning about celestial objects
+- **Progress Tracking**: Detailed stats and achievements
+- **Responsive Design**: Works on desktop, tablet, and mobile
+
+### Research Tools
 - **Researcher Dashboard**: Admin interface for scientists to review findings
+- **Annotation Validation**: Expert verification system
+- **Data Export**: Export annotations for analysis
 
 ## Tech Stack
 
@@ -100,6 +122,28 @@ npm run dev
 
 The frontend will be available at http://localhost:3000 and the backend API at http://localhost:5000.
 
+## Deployment
+
+### Vercel Deployment (Recommended)
+
+This project is optimized for Vercel deployment with pre-configured `vercel.json` files.
+
+**Quick Deploy:**
+1. Push to GitHub
+2. Import to Vercel
+3. Configure environment variables
+4. Deploy!
+
+See [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) for detailed instructions.
+
+### Docker Deployment
+
+```bash
+docker-compose up -d
+```
+
+See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment guide.
+
 ## Development
 
 ### Running Tests
@@ -118,6 +162,50 @@ cd backend
 npm run db:migrate
 npm run db:rollback  # Rollback last migration
 ```
+
+## New Features (v2.0)
+
+### 🎯 Daily Challenges
+Complete daily objectives to earn bonus rewards:
+- Rotate automatically each day
+- Category-specific challenges (galaxies, nebulae, etc.)
+- Bonus points and experience
+- Track progress in real-time
+
+### 🔥 Streak System
+Build your daily streak for increasing rewards:
+- Login daily to maintain your streak
+- Earn bonus points based on streak length
+- Freeze your streak once per week
+- Track your longest streak ever
+
+### 📚 Educational Content
+Learn while you explore:
+- Detailed information for each celestial category
+- Fascinating facts about space objects
+- Identification tips and guidelines
+- Contextual learning panels
+
+### 🎓 Interactive Tutorial
+New users get a comprehensive onboarding:
+- 7-step interactive guide
+- Learn annotation tools and categories
+- Understand the point system
+- Skip anytime, resume later
+
+### 💬 Social Features
+Engage with the community:
+- Comment on images
+- Like other users' comments
+- Share interesting discoveries
+- Discuss findings with fellow astronomers
+
+### 🏆 Enhanced Missions
+Long-term objectives with rewards:
+- Multiple active missions
+- Progress tracking
+- Difficulty levels (Easy, Medium, Hard)
+- Rich rewards for completion
 
 ## API Documentation
 
