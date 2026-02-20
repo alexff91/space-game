@@ -18,14 +18,14 @@ export default function Missions() {
     setLoading(true);
     try {
       const [missionsRes, dailyRes, streakRes] = await Promise.all([
-        api.get('/missions'),
-        api.get('/missions/daily'),
-        api.get('/streak'),
+        api.get<any>('/missions'),
+        api.get<any>('/missions/daily'),
+        api.get<any>('/streak'),
       ]);
 
-      setMissions(missionsRes.data);
-      setDailyChallenge(dailyRes.data);
-      setStreak(streakRes.data);
+      setMissions(missionsRes);
+      setDailyChallenge(dailyRes);
+      setStreak(streakRes);
     } catch (error) {
       console.error('Failed to load data');
     } finally {
@@ -35,9 +35,9 @@ export default function Missions() {
 
   const handleStreakCheck = async () => {
     try {
-      const response = await api.post('/streak/check', {});
-      setStreak(response.data);
-      toast.success(`Streak updated! Current streak: ${response.data.currentStreak} days`);
+      const response = await api.post<any>('/streak/check', {});
+      setStreak(response);
+      toast.success(`Streak updated! Current streak: ${response.currentStreak} days`);
     } catch (error) {
       console.error('Failed to check streak');
     }

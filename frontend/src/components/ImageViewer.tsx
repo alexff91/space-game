@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react';
-import { Stage, Layer, Image as KonvaImage, Rect, Circle, Line } from 'react-konva';
+import { useState, useRef } from 'react';
+import { Stage, Layer, Image as KonvaImage, Rect, Circle } from 'react-konva';
 import { Image as ImageType, Annotation, AnnotationCoordinates } from '@/types';
 import { ANNOTATION_CATEGORIES, ANNOTATION_TOOLS } from '@/utils/constants';
 import { ZoomIn, ZoomOut, Move, Maximize2 } from 'lucide-react';

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Telescope, User, Trophy, LogOut, Star, Target } from 'lucide-react';
+import { Rocket, User, Trophy, LogOut, Star, Target } from 'lucide-react';
 
 export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -15,7 +15,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2 group">
-            <Telescope className="w-8 h-8 text-primary-500 group-hover:rotate-12 transition-transform" />
+            <Rocket className="w-8 h-8 text-primary-500 group-hover:rotate-12 transition-transform" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary-400 to-purple-400 bg-clip-text text-transparent">
               AstroQuest
             </span>

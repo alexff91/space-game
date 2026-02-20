@@ -17,7 +17,6 @@ export default function ImageDetail() {
   const [myAnnotations, setMyAnnotations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('galaxy');
   const [confidence, setConfidence] = useState(3);
   const [description, setDescription] = useState('');
 
