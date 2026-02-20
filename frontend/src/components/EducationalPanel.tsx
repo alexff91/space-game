@@ -1,5 +1,4 @@
 import { BookOpen, Sparkles } from 'lucide-react';
-import { ANNOTATION_CATEGORIES } from '@/utils/constants';
 
 interface EducationalPanelProps {
   category?: string;
@@ -9,7 +8,7 @@ const EDUCATIONAL_CONTENT: Record<string, {
   title: string;
   content: string;
   facts: string[];
-  how ToIdentify: string;
+  howToIdentify: string;
 }> = {
   galaxy: {
     title: 'Galaxies',

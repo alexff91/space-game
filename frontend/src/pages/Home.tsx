@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
-import { Telescope, Star, Users, Award, Sparkles } from 'lucide-react';
+import { Rocket, Star, Users, Award, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Home() {
@@ -8,7 +8,7 @@ export default function Home() {
 
   const features = [
     {
-      icon: <Telescope className="w-12 h-12" />,
+      icon: <Rocket className="w-12 h-12" />,
       title: 'Real Space Images',
       description:
         'Analyze authentic astronomical images from NASA, ESA, and Hubble Space Telescope',
