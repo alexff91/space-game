@@ -1,243 +1,316 @@
-# Astronomy Discovery Game Platform
+# AstroQuest - Astronomy Discovery Game
 
-An online game that engages users in analyzing real astronomical images to identify unusual objects or patterns, contributing to ongoing space research.
+> A citizen-science platform that turns real astronomical image analysis into an engaging game, empowering the public to contribute to actual space research.
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)
+![React](https://img.shields.io/badge/React-18-61DAFB.svg)
+![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933.svg)
+![Vitest](https://img.shields.io/badge/tested%20with-Vitest-6E9F18.svg)
+
+---
 
 ## Overview
 
-This platform transforms space image analysis into an engaging game, empowering the public to contribute to real astronomical research while ensuring scientific rigor and data integrity.
+AstroQuest transforms deep-space image analysis into a rewarding experience. Users examine authentic astronomical images from **NASA**, **ESA**, and the **Hubble Space Telescope**, identify celestial objects, and earn points---all while contributing meaningful data to ongoing research. Consensus-based annotation validation ensures scientific rigor.
+
+<!-- Screenshots placeholder -->
+<!--
+<p align="center">
+  <img src="docs/screenshots/home.png" width="45%" alt="Home page" />
+  <img src="docs/screenshots/annotate.png" width="45%" alt="Image annotation" />
+</p>
+<p align="center">
+  <img src="docs/screenshots/leaderboard.png" width="45%" alt="Leaderboard" />
+  <img src="docs/screenshots/missions.png" width="45%" alt="Missions" />
+</p>
+-->
+
+---
 
 ## Features
 
-### Core Features
-- **Real Astronomical Data**: Integration with NASA, ESA, and Hubble image databases
-- **Interactive Annotation**: Web-based image viewer with zoom, pan, and annotation tools
-- **Consensus Building**: Aggregate user annotations to identify potential discoveries
-- **Educational Content**: Learn about astronomy while contributing to research
+### Real Astronomical Data
+- Integrates with **NASA Image and Video Library API** and **ESA/Hubble API**
+- Browse thousands of authentic deep-space images from world-class telescopes
+- Rich metadata including coordinates (RA/Dec), wavelength, and observation date
 
-### Gamification & Engagement
-- **Points & Levels**: Earn points for annotations, level up to unlock achievements
-- **Daily Challenges**: New challenges every day with special rewards
-- **Missions System**: Long-term objectives with progress tracking
-- **Streak System**: Daily login rewards with streak freezing
-- **Leaderboard**: Compete with other citizen scientists
+### Interactive Image Annotation
+- Canvas-based viewer with zoom, pan, and multiple annotation tools (point, rectangle, polygon, freeform)
+- 9 scientific categories: Galaxy, Nebula, Star Cluster, Supernova, Black Hole, Asteroid, Quasar, Anomaly, Artifact
+- Confidence scoring and consensus validation across multiple users
+
+### Gamification System
+- **Points and Levels**: 10-level progression system with exponential XP curve (0 to 16,000 XP)
+- **Daily Streaks**: Maintain consecutive-day activity for bonus rewards, with weekly streak-freeze
+- **Missions**: Short-term and long-term objectives with difficulty tiers (Beginner through Expert)
+- **Daily Challenges**: Rotating category-specific tasks that reset every 24 hours
+- **Leaderboard**: Ranked competition among citizen scientists
+- **Achievements**: Unlockable badges across categories (common, rare, epic, legendary)
 
 ### Social Features
-- **Comments**: Discuss findings with other users
-- **Likes**: Engage with community observations
-- **Sharing**: Share interesting discoveries
+- Comment and discuss findings on images
+- Like and share community observations
+- Profile pages with stats, annotation history, and achievement showcase
 
-### User Experience
-- **Interactive Tutorial**: 7-step onboarding for new users
-- **Educational Panels**: Contextual learning about celestial objects
-- **Progress Tracking**: Detailed stats and achievements
-- **Responsive Design**: Works on desktop, tablet, and mobile
+### Educational Content
+- Contextual learning panels for every celestial category
+- Identification tips and fascinating facts about galaxies, nebulae, quasars, and more
+- 7-step interactive tutorial for new users
 
 ### Research Tools
-- **Researcher Dashboard**: Admin interface for scientists to review findings
-- **Annotation Validation**: Expert verification system
-- **Data Export**: Export annotations for analysis
+- Researcher/admin dashboard for reviewing and validating annotations
+- Consensus annotation system that aggregates crowd-sourced data
+- Data export capabilities for downstream analysis
+
+---
 
 ## Tech Stack
 
-### Frontend
-- React 18 with TypeScript
-- Canvas-based image viewer with annotation tools
-- Responsive design for desktop, tablet, and mobile
-- Accessibility features (WCAG 2.1 compliant)
+| Layer        | Technology                                          |
+| ------------ | --------------------------------------------------- |
+| **Frontend** | React 18, TypeScript 5, Vite, Tailwind CSS          |
+| **State**    | Zustand (auth), React Query (server state)          |
+| **Canvas**   | Konva / react-konva for image annotation             |
+| **Routing**  | React Router v6 with protected routes               |
+| **Backend**  | Node.js, Express, PostgreSQL, Redis                  |
+| **Auth**     | JWT-based authentication with role system            |
+| **APIs**     | NASA Image Library, ESA/Hubble Space Telescope       |
+| **Testing**  | Vitest, React Testing Library, happy-dom             |
+| **Deploy**   | Docker Compose, Vercel (frontend), Railway (backend) |
 
-### Backend
-- Node.js with Express
-- PostgreSQL for data storage
-- Redis for caching
-- JWT-based authentication
-- RESTful API design
-
-### External APIs
-- NASA Image and Video Library API
-- ESA/Hubble Space Telescope API
-- Additional astronomy data sources
+---
 
 ## Project Structure
 
 ```
-astronomy-discovery-game/
-├── frontend/          # React frontend application
+space-game/
+├── frontend/                 # React SPA
 │   ├── src/
-│   │   ├── components/    # Reusable UI components
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API clients
-│   │   ├── utils/         # Utility functions
-│   │   └── types/         # TypeScript types
-│   └── public/
-├── backend/           # Node.js backend application
+│   │   ├── components/       # Reusable UI (Navbar, MissionCard, Tutorial, ...)
+│   │   ├── pages/            # Route pages (Home, Explore, Login, Missions, ...)
+│   │   ├── services/         # API client layer (auth, images, annotations, users)
+│   │   ├── store/            # Zustand state management
+│   │   ├── types/            # TypeScript interfaces
+│   │   ├── utils/            # Constants, game logic, helpers
+│   │   ├── test/             # Test setup and utilities
+│   │   └── styles/           # Tailwind CSS entry point
+│   ├── vite.config.ts        # Vite + Vitest configuration
+│   └── tsconfig.json
+├── backend/                  # Express API server
 │   ├── src/
-│   │   ├── routes/        # API routes
-│   │   ├── controllers/   # Request handlers
-│   │   ├── models/        # Database models
-│   │   ├── services/      # Business logic
-│   │   ├── middleware/    # Express middleware
-│   │   └── utils/         # Utility functions
+│   │   ├── routes/           # API route definitions
+│   │   ├── controllers/      # Request handlers
+│   │   ├── models/           # Sequelize database models
+│   │   ├── services/         # Business logic
+│   │   ├── middleware/       # Auth, validation, rate limiting
+│   │   └── utils/            # Helpers and constants
 │   └── tests/
-└── docs/              # Documentation
+├── docs/                     # Additional documentation
+├── docker-compose.yml        # Full-stack containerized setup
+└── README.md
 ```
+
+---
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm
-- PostgreSQL 14+
-- Redis 7+
 
-### Installation
+- **Node.js** 18+ and npm
+- **PostgreSQL** 14+ (for backend)
+- **Redis** 7+ (for caching, optional for dev)
 
-1. Clone the repository:
+### Quick Start (Frontend Only)
+
 ```bash
-git clone <repository-url>
-cd astronomy-discovery-game
+# Clone the repository
+git clone https://github.com/alexff91/space-game.git
+cd space-game
+
+# Install frontend dependencies
+cd frontend
+npm install
+
+# Start the dev server (proxies API calls to localhost:5000)
+npm run dev
+# Open http://localhost:3000
 ```
 
-2. Install dependencies:
+### Full-Stack with Docker
+
 ```bash
+# From the repository root
+docker-compose up -d
+
+# Frontend:  http://localhost:3000
+# Backend:   http://localhost:5000
+# Database:  PostgreSQL on port 5432
+# Cache:     Redis on port 6379
+```
+
+### Manual Full-Stack Setup
+
+```bash
+# 1. Clone and install everything
+git clone https://github.com/alexff91/space-game.git
+cd space-game
 npm run install:all
-```
 
-3. Set up environment variables:
-```bash
-# Backend (.env in backend/)
+# 2. Configure environment
 cp backend/.env.example backend/.env
-# Edit backend/.env with your configuration
-```
+cp frontend/.env.example frontend/.env
+# Edit both .env files with your settings
 
-4. Set up the database:
-```bash
+# 3. Set up the database
 cd backend
 npm run db:migrate
 npm run db:seed
-```
 
-5. Start the development servers:
-```bash
+# 4. Start both servers
+cd ..
 npm run dev
 ```
 
-The frontend will be available at http://localhost:3000 and the backend API at http://localhost:5000.
+### Environment Variables
 
-## Deployment
+Copy `.env.example` files and configure:
 
-### Vercel Deployment (Recommended)
+| Variable            | Description                     | Required |
+| ------------------- | ------------------------------- | -------- |
+| `DATABASE_URL`      | PostgreSQL connection string    | Yes      |
+| `REDIS_URL`         | Redis connection string         | No       |
+| `JWT_SECRET`        | Secret for JWT token signing    | Yes      |
+| `NASA_API_KEY`      | NASA API key (get from api.nasa.gov) | Yes |
+| `VITE_API_URL`      | Backend API URL for frontend    | No       |
 
-This project is optimized for Vercel deployment with pre-configured `vercel.json` files.
+---
 
-**Quick Deploy:**
-1. Push to GitHub
-2. Import to Vercel
-3. Configure environment variables
-4. Deploy!
+## Testing
 
-See [VERCEL_DEPLOYMENT.md](docs/VERCEL_DEPLOYMENT.md) for detailed instructions.
-
-### Docker Deployment
+The project uses **Vitest** with **React Testing Library** and **happy-dom**.
 
 ```bash
-docker-compose up -d
-```
+cd frontend
 
-See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for production deployment guide.
-
-## Development
-
-### Running Tests
-```bash
+# Run all tests
 npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run with coverage report
+npm run test:coverage
 ```
 
-### Building for Production
+### Test Coverage
+
+| Area                | Files | Tests | What is tested                                              |
+| ------------------- | ----- | ----- | ----------------------------------------------------------- |
+| **Utility/Helpers** | 2     | 37    | Level thresholds, XP calculation, progress, categories, difficulty |
+| **Game Logic**      | 1     | 14    | Streak mechanics, mission progress, scoring, difficulty mapping |
+| **API Services**    | 4     | 26    | Auth, images, annotations, users (all with mocked HTTP)     |
+| **Components**      | 3     | 21    | EducationalPanel, MissionCard, PrivateRoute                 |
+| **Pages**           | 3     | 18    | Home, Login, Register (render + interaction)                |
+| **Types**           | 1     | 9     | TypeScript interface validation                             |
+| **Total**           | **13**| **111+**| Full frontend coverage                                     |
+
+---
+
+## Building for Production
+
 ```bash
+cd frontend
+
+# TypeScript check + Vite production build
 npm run build
+
+# Preview the production build locally
+npm run preview
 ```
 
-### Database Migrations
-```bash
-cd backend
-npm run db:migrate
-npm run db:rollback  # Rollback last migration
-```
+The production build outputs optimized static files to `frontend/dist/` (~700 KB JS, ~22 KB CSS).
 
-## New Features (v2.0)
-
-### 🎯 Daily Challenges
-Complete daily objectives to earn bonus rewards:
-- Rotate automatically each day
-- Category-specific challenges (galaxies, nebulae, etc.)
-- Bonus points and experience
-- Track progress in real-time
-
-### 🔥 Streak System
-Build your daily streak for increasing rewards:
-- Login daily to maintain your streak
-- Earn bonus points based on streak length
-- Freeze your streak once per week
-- Track your longest streak ever
-
-### 📚 Educational Content
-Learn while you explore:
-- Detailed information for each celestial category
-- Fascinating facts about space objects
-- Identification tips and guidelines
-- Contextual learning panels
-
-### 🎓 Interactive Tutorial
-New users get a comprehensive onboarding:
-- 7-step interactive guide
-- Learn annotation tools and categories
-- Understand the point system
-- Skip anytime, resume later
-
-### 💬 Social Features
-Engage with the community:
-- Comment on images
-- Like other users' comments
-- Share interesting discoveries
-- Discuss findings with fellow astronomers
-
-### 🏆 Enhanced Missions
-Long-term objectives with rewards:
-- Multiple active missions
-- Progress tracking
-- Difficulty levels (Easy, Medium, Hard)
-- Rich rewards for completion
+---
 
 ## API Documentation
 
-API documentation is available at `/api/docs` when running the backend server.
+When the backend is running, API docs are available at `/api/docs`.
+
+### Key Endpoints
+
+| Method | Endpoint                      | Description                        |
+| ------ | ----------------------------- | ---------------------------------- |
+| POST   | `/api/auth/register`          | Create a new account               |
+| POST   | `/api/auth/login`             | Authenticate and receive JWT       |
+| GET    | `/api/images`                 | List images (paginated, filtered)  |
+| GET    | `/api/images/random`          | Get a random image for annotation  |
+| POST   | `/api/annotations`            | Submit a new annotation            |
+| GET    | `/api/annotations/consensus/:id` | Get consensus annotations       |
+| GET    | `/api/users/leaderboard`      | Global leaderboard                 |
+| GET    | `/api/missions`               | Active missions                    |
+| POST   | `/api/streak/check`           | Check in for daily streak          |
+
+---
+
+## Deployment
+
+### Vercel (Frontend)
+
+```bash
+cd frontend
+npx vercel --prod
+```
+
+### Railway / Render (Backend)
+
+The backend requires PostgreSQL and Redis. Deploy to a container-friendly platform:
+
+```bash
+railway login
+railway new space-game-api
+railway deploy
+```
+
+See [SETUP.md](SETUP.md) for detailed deployment instructions.
+
+---
 
 ## Contributing
 
-Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Write tests for your changes
+4. Ensure all tests pass (`npm test`) and the build succeeds (`npm run build`)
+5. Commit your changes (`git commit -m "Add amazing feature"`)
+6. Push to your branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+---
 
 ## Security
 
 - HTTPS encryption for all data in transit
-- Bcrypt password hashing
-- JWT-based authentication
-- OAuth 2.0 support
+- Bcrypt password hashing with salt rounds
+- JWT-based stateless authentication
+- Role-based access control (user / researcher / admin)
 - Rate limiting and CORS protection
-- Input validation and sanitization
+- Input validation and sanitization on all endpoints
 
-## Privacy
-
-User data is collected and stored in accordance with our Privacy Policy. Users must consent to data collection, and all data can be deleted upon request.
+---
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+---
 
 ## Acknowledgments
 
-- NASA for providing open access to astronomical imagery
-- ESA and Hubble Space Telescope for data access
-- The citizen science community for inspiration
+- [NASA](https://api.nasa.gov/) for open access to astronomical imagery
+- [ESA/Hubble](https://esahubble.org/) for space telescope data
+- The global citizen-science community for inspiration
 
-## Contact
+---
 
-For questions or support, please open an issue on GitHub.
+*Built with curiosity about the cosmos.*
