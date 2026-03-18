@@ -1,5 +1,4 @@
 import { Annotation, Image } from '../models';
-import { Op } from 'sequelize';
 
 interface ClusterPoint {
   x: number;
@@ -37,7 +36,7 @@ export async function calculateConsensus(imageId: number): Promise<void> {
     const consensusAnnotations: any[] = [];
 
     // For each category, find clusters of similar annotations
-    for (const [category, categoryAnnotations] of Object.entries(categorized)) {
+    for (const [_category, categoryAnnotations] of Object.entries(categorized)) {
       if (categoryAnnotations.length < 2) {
         continue;
       }

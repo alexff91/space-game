@@ -17,6 +17,7 @@ export default function ImageDetail() {
   const [myAnnotations, setMyAnnotations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   const [confidence, setConfidence] = useState(3);
   const [description, setDescription] = useState('');
 

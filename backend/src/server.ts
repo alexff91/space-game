@@ -54,7 +54,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     success: true,
     message: 'Server is running',
@@ -72,7 +72,7 @@ app.use('/api/streak', streakRoutes);
 app.use('/api/comments', commentRoutes);
 
 // API documentation
-app.get('/api', (req, res) => {
+app.get('/api', (_req, res) => {
   res.json({
     success: true,
     message: 'Astronomy Discovery Game API',

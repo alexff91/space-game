@@ -87,7 +87,7 @@ export const getImage = async (req: Request, res: Response): Promise<void> => {
 // @desc    Get random image for annotation
 // @route   GET /api/images/random
 // @access  Private
-export const getRandomImage = async (req: Request, res: Response): Promise<void> => {
+export const getRandomImage = async (_req: Request, res: Response): Promise<void> => {
   try {
     // Get images with fewer annotations (prioritize)
     const image = await Image.findOne({
@@ -99,7 +99,7 @@ export const getRandomImage = async (req: Request, res: Response): Promise<void>
       },
       order: [
         ['annotationCount', 'ASC'],
-        [Image.sequelize!.random()],
+        Image.sequelize!.fn('RANDOM'),
       ],
     });
 
@@ -107,7 +107,7 @@ export const getRandomImage = async (req: Request, res: Response): Promise<void>
       // If no images with low annotation count, get any random image
       const anyImage = await Image.findOne({
         where: { isActive: true },
-        order: [Image.sequelize!.random()],
+        order: [Image.sequelize!.fn('RANDOM')],
       });
 
       if (!anyImage) {

@@ -5,9 +5,13 @@ import { AuthRequest } from '../middleware/auth';
 
 // Generate JWT Token
 const generateToken = (id: number): string => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'default_secret', {
-    expiresIn: process.env.JWT_EXPIRE || '7d',
-  });
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required');
+  }
+  return jwt.sign({ id }, secret, {
+    expiresIn: '7d',
+  } as jwt.SignOptions);
 };
 
 // Send token response
@@ -122,7 +126,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 // @desc    Logout user / clear cookie
 // @route   POST /api/auth/logout
 // @access  Private
-export const logout = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (_req: Request, res: Response): Promise<void> => {
   res.cookie('token', 'none', {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true,

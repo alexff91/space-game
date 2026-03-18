@@ -6,16 +6,16 @@ import { Op } from 'sequelize';
 // @desc    Get active missions
 // @route   GET /api/missions
 // @access  Public
-export const getMissions = async (req: Request, res: Response): Promise<void> => {
+export const getMissions = async (_req: Request, res: Response): Promise<void> => {
   try {
     const missions = await Mission.findAll({
       where: {
         isActive: true,
         [Op.or]: [
-          { endDate: null },
+          { endDate: null as any },
           { endDate: { [Op.gte]: new Date() } },
         ],
-      },
+      } as any,
       order: [['difficulty', 'ASC']],
     });
 
@@ -34,7 +34,7 @@ export const getMissions = async (req: Request, res: Response): Promise<void> =>
 // @desc    Get daily challenge
 // @route   GET /api/missions/daily
 // @access  Public
-export const getDailyChallenge = async (req: Request, res: Response): Promise<void> => {
+export const getDailyChallenge = async (_req: Request, res: Response): Promise<void> => {
   try {
     const today = new Date().toISOString().split('T')[0];
 

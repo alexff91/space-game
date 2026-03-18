@@ -135,6 +135,7 @@ export function getNextLevelXP(currentLevel: number): number {
 export function getProgressToNextLevel(experience: number, currentLevel: number): number {
   const currentLevelXP = LEVEL_THRESHOLDS.find((l) => l.level === currentLevel)?.minXP || 0;
   const nextLevelXP = getNextLevelXP(currentLevel);
-  const progress = ((experience - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100;
+  const denominator = nextLevelXP - currentLevelXP;
+  const progress = denominator > 0 ? ((experience - currentLevelXP) / denominator) * 100 : 0;
   return Math.min(Math.max(progress, 0), 100);
 }

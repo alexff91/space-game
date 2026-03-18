@@ -41,10 +41,16 @@ export const protect = async (
 
     try {
       // Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || 'default_secret'
-      ) as JWTPayload;
+      const secret = process.env.JWT_SECRET;
+      if (!secret) {
+        res.status(500).json({
+          success: false,
+          message: 'Server configuration error',
+        });
+        return;
+      }
+
+      const decoded = jwt.verify(token, secret) as JWTPayload;
 
       // Get user from database
       const user = await User.findByPk(decoded.id, {

@@ -42,7 +42,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
         stats: {
           annotationCount,
           validatedCount,
-          achievementCount: user.achievements?.length || 0,
+          achievementCount: ((user as any).achievements || []).length,
         },
       },
     });
@@ -97,7 +97,6 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
 export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
   try {
     const limit = parseInt(req.query.limit as string) || 50;
-    const timeframe = req.query.timeframe as string; // 'week', 'month', 'all'
 
     const users = await User.findAll({
       attributes: ['id', 'username', 'score', 'level', 'avatarUrl'],
