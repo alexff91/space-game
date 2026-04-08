@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Flame, Trophy, Calendar } from 'lucide-react';
 import MissionCard from '@/components/MissionCard';
 import { api } from '@/services/api';
+import { isDemoMode, DEMO_MISSIONS, DEMO_DAILY_CHALLENGE, DEMO_STREAK } from '@/services/demoData';
 import toast from 'react-hot-toast';
 
 export default function Missions() {
@@ -17,17 +18,25 @@ export default function Missions() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [missionsRes, dailyRes, streakRes] = await Promise.all([
-        api.get<any>('/missions'),
-        api.get<any>('/missions/daily'),
-        api.get<any>('/streak'),
-      ]);
-
-      setMissions(missionsRes);
-      setDailyChallenge(dailyRes);
-      setStreak(streakRes);
-    } catch (error) {
-      console.error('Failed to load data');
+      if (isDemoMode()) {
+        setMissions(DEMO_MISSIONS.map((m) => ({ ...m, progress: Math.floor(Math.random() * 80) })));
+        setDailyChallenge(DEMO_DAILY_CHALLENGE);
+        setStreak(DEMO_STREAK);
+      } else {
+        const [missionsRes, dailyRes, streakRes] = await Promise.all([
+          api.get<any>('/missions'),
+          api.get<any>('/missions/daily'),
+          api.get<any>('/streak'),
+        ]);
+        setMissions(missionsRes);
+        setDailyChallenge(dailyRes);
+        setStreak(streakRes);
+      }
+    } catch {
+      // Fall back to demo data
+      setMissions(DEMO_MISSIONS.map((m) => ({ ...m, progress: Math.floor(Math.random() * 80) })));
+      setDailyChallenge(DEMO_DAILY_CHALLENGE);
+      setStreak(DEMO_STREAK);
     } finally {
       setLoading(false);
     }
@@ -35,16 +44,27 @@ export default function Missions() {
 
   const handleStreakCheck = async () => {
     try {
+      if (isDemoMode()) {
+        const updated = { ...DEMO_STREAK, currentStreak: (streak?.currentStreak || 0) + 1 };
+        setStreak(updated);
+        toast.success(`Streak updated! Current streak: ${updated.currentStreak} days`);
+        return;
+      }
       const response = await api.post<any>('/streak/check', {});
       setStreak(response);
       toast.success(`Streak updated! Current streak: ${response.currentStreak} days`);
-    } catch (error) {
+    } catch {
       console.error('Failed to check streak');
     }
   };
 
   const handleFreezeStreak = async () => {
     try {
+      if (isDemoMode()) {
+        setStreak({ ...streak, streakFrozen: true });
+        toast.success('Streak frozen for 1 day!');
+        return;
+      }
       await api.post('/streak/freeze', {});
       toast.success('Streak frozen for 1 day!');
       loadData();

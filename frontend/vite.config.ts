@@ -10,6 +10,17 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['framer-motion', 'react-hot-toast', 'zustand', 'axios'],
+          'canvas-vendor': ['konva', 'react-konva', 'use-image'],
+        },
+      },
+    },
+  },
   server: {
     port: 3000,
     proxy: {

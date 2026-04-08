@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { userService } from '@/services/userService';
-import { annotationService } from '@/services/annotationService';
-import { User, Award, BarChart3, Target } from 'lucide-react';
+import { User, Award, BarChart3, Target, ArrowRight } from 'lucide-react';
 import { getProgressToNextLevel, getNextLevelXP } from '@/utils/constants';
+import { isDemoMode, DEMO_USER_STATS, DEMO_ANNOTATIONS, DEMO_ACHIEVEMENTS } from '@/services/demoData';
 
 export default function Profile() {
   const { user } = useAuthStore();
@@ -18,10 +19,14 @@ export default function Profile() {
 
   const loadStats = async () => {
     try {
-      const response = await userService.getUserStats();
-      setStats(response.data);
-    } catch (error) {
-      console.error('Failed to load stats');
+      if (isDemoMode()) {
+        setStats(DEMO_USER_STATS);
+      } else {
+        const response = await userService.getUserStats();
+        setStats(response.data);
+      }
+    } catch {
+      setStats(DEMO_USER_STATS);
     } finally {
       setLoading(false);
     }
@@ -29,10 +34,18 @@ export default function Profile() {
 
   const loadRecentAnnotations = async () => {
     try {
-      const response = await annotationService.getUserAnnotations(1, 5);
-      setRecentAnnotations(response.data);
-    } catch (error) {
-      console.error('Failed to load annotations');
+      if (isDemoMode()) {
+        setRecentAnnotations(DEMO_ANNOTATIONS.slice(0, 5).map((a) => ({
+          ...a,
+          image: { title: `Image #${a.imageId}`, thumbnailUrl: undefined, imageUrl: undefined },
+        })));
+      } else {
+        const { annotationService } = await import('@/services/annotationService');
+        const response = await annotationService.getUserAnnotations(1, 5);
+        setRecentAnnotations(response.data);
+      }
+    } catch {
+      setRecentAnnotations(DEMO_ANNOTATIONS.slice(0, 5));
     }
   };
 
@@ -49,20 +62,22 @@ export default function Profile() {
     : 0;
   const nextLevelXP = user ? getNextLevelXP(user.level) : 0;
 
+  const unlockedAchievements = DEMO_ACHIEVEMENTS.filter((a) => a.unlockedAt).slice(0, 4);
+
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-4xl font-bold mb-8">Your Profile</h1>
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* User Info */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <div className="card">
             <div className="text-center mb-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-24 h-24 bg-gradient-to-br from-primary-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4 ring-4 ring-primary-500/20">
                 <User className="w-12 h-12" />
               </div>
               <h2 className="text-2xl font-bold">{user?.username}</h2>
-              <p className="text-gray-400">{user?.email}</p>
+              <p className="text-gray-400 text-sm">{user?.email}</p>
             </div>
 
             <div className="space-y-4">
@@ -73,9 +88,9 @@ export default function Profile() {
                     {user?.experience} / {nextLevelXP} XP
                   </span>
                 </div>
-                <div className="w-full bg-gray-700 rounded-full h-2">
+                <div className="w-full bg-gray-700 rounded-full h-2.5">
                   <div
-                    className="bg-gradient-to-r from-primary-500 to-purple-500 h-2 rounded-full transition-all"
+                    className="bg-gradient-to-r from-primary-500 to-purple-500 h-2.5 rounded-full transition-all"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -84,7 +99,7 @@ export default function Profile() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-space-dark p-4 rounded-lg text-center">
                   <div className="text-3xl font-bold text-primary-400">
-                    {user?.score}
+                    {user?.score?.toLocaleString()}
                   </div>
                   <div className="text-sm text-gray-400">Total Points</div>
                 </div>
@@ -97,12 +112,32 @@ export default function Profile() {
               </div>
             </div>
           </div>
+
+          {/* Recent achievements */}
+          {isDemoMode() && unlockedAchievements.length > 0 && (
+            <div className="card">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold">Recent Badges</h3>
+                <Link to="/achievements" className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                  View All <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {unlockedAchievements.map((a) => (
+                  <div key={a.id} className={`p-2 rounded-lg text-center text-xs badge-${a.rarity} bg-space-dark`}>
+                    <div className="font-semibold truncate">{a.name}</div>
+                    <div className="text-gray-500">+{a.points} pts</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Stats */}
         <div className="lg:col-span-2 space-y-6">
           {/* Overview Stats */}
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="card">
               <div className="flex items-center space-x-3">
                 <div className="p-3 bg-primary-900/30 rounded-lg">
@@ -158,7 +193,7 @@ export default function Profile() {
               <div className="space-y-3">
                 {stats.categoryBreakdown.map((item: any, i: number) => (
                   <div key={i} className="flex items-center justify-between">
-                    <span className="capitalize">{item.category.replace('_', ' ')}</span>
+                    <span className="capitalize text-sm">{item.category.replace('_', ' ')}</span>
                     <div className="flex items-center space-x-3">
                       <div className="w-32 bg-gray-700 rounded-full h-2">
                         <div
@@ -193,17 +228,15 @@ export default function Profile() {
                     className="flex items-center justify-between p-3 bg-space-dark rounded-lg"
                   >
                     <div className="flex items-center space-x-3">
-                      <img
-                        src={ann.image?.thumbnailUrl || ann.image?.imageUrl}
-                        alt={ann.image?.title}
-                        className="w-12 h-12 object-cover rounded"
-                      />
+                      <div className="w-12 h-12 bg-space-purple rounded flex items-center justify-center text-primary-400 text-xs font-bold">
+                        #{ann.imageId}
+                      </div>
                       <div>
-                        <div className="font-medium">
-                          {ann.image?.title?.slice(0, 50)}...
+                        <div className="font-medium text-sm capitalize">
+                          {ann.category?.replace('_', ' ')} annotation
                         </div>
-                        <div className="text-sm text-gray-400 capitalize">
-                          {ann.category.replace('_', ' ')}
+                        <div className="text-xs text-gray-400">
+                          Confidence: {ann.confidence}/5
                         </div>
                       </div>
                     </div>

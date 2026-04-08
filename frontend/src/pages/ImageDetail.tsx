@@ -4,9 +4,11 @@ import { imageService } from '@/services/imageService';
 import { annotationService } from '@/services/annotationService';
 import { Image, Annotation, AnnotationCoordinates } from '@/types';
 import { useAuthStore } from '@/store/authStore';
+import { isDemoMode, DEMO_IMAGES, DEMO_ANNOTATIONS } from '@/services/demoData';
 import ImageViewer from '@/components/ImageViewer';
+import EducationalPanel from '@/components/EducationalPanel';
 import toast from 'react-hot-toast';
-import { ArrowLeft, Save, Info } from 'lucide-react';
+import { ArrowLeft, Save, Info, BookOpen } from 'lucide-react';
 
 export default function ImageDetail() {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +21,8 @@ export default function ImageDetail() {
   const [saving, setSaving] = useState(false);
   const [confidence, setConfidence] = useState(3);
   const [description, setDescription] = useState('');
+  const [showEducation, setShowEducation] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('galaxy');
 
   useEffect(() => {
     if (id) {
@@ -30,11 +34,17 @@ export default function ImageDetail() {
   const loadImage = async () => {
     setLoading(true);
     try {
-      const response = await imageService.getImage(Number(id));
-      setImage(response.data);
-    } catch (error) {
-      toast.error('Failed to load image');
-      navigate('/explore');
+      if (isDemoMode()) {
+        const img = DEMO_IMAGES.find((i) => i.id === Number(id)) || DEMO_IMAGES[0];
+        setImage(img);
+        setSelectedCategory(img.category || 'galaxy');
+      } else {
+        const response = await imageService.getImage(Number(id));
+        setImage(response.data);
+      }
+    } catch {
+      const img = DEMO_IMAGES.find((i) => i.id === Number(id)) || DEMO_IMAGES[0];
+      setImage(img);
     } finally {
       setLoading(false);
     }
@@ -42,10 +52,15 @@ export default function ImageDetail() {
 
   const loadAnnotations = async () => {
     try {
-      const response = await annotationService.getImageAnnotations(Number(id));
-      setAnnotations(response.data);
-    } catch (error) {
-      console.error('Failed to load annotations');
+      if (isDemoMode()) {
+        const anns = DEMO_ANNOTATIONS.filter((a) => a.imageId === Number(id));
+        setAnnotations(anns);
+      } else {
+        const response = await annotationService.getImageAnnotations(Number(id));
+        setAnnotations(response.data);
+      }
+    } catch {
+      setAnnotations(DEMO_ANNOTATIONS.filter((a) => a.imageId === Number(id)));
     }
   };
 
@@ -54,8 +69,8 @@ export default function ImageDetail() {
     coordinates: AnnotationCoordinates;
     category: string;
   }) => {
-    // Add to temporary annotations
     setMyAnnotations([...myAnnotations, annotation]);
+    setSelectedCategory(annotation.category);
     toast.success('Annotation added! Click Save when done.');
   };
 
@@ -67,27 +82,29 @@ export default function ImageDetail() {
 
     setSaving(true);
     try {
-      for (const ann of myAnnotations) {
-        await annotationService.createAnnotation({
-          imageId: Number(id),
-          type: ann.type as any,
-          coordinates: ann.coordinates,
-          category: ann.category,
-          confidence,
-          description: description || undefined,
-        });
+      if (!isDemoMode()) {
+        for (const ann of myAnnotations) {
+          await annotationService.createAnnotation({
+            imageId: Number(id),
+            type: ann.type as any,
+            coordinates: ann.coordinates,
+            category: ann.category,
+            confidence,
+            description: description || undefined,
+          });
+        }
       }
 
-      toast.success(`Saved ${myAnnotations.length} annotations! +${myAnnotations.length * 10} points`);
+      const points = myAnnotations.length * (confidence >= 4 ? 20 : 10);
+      toast.success(`Saved ${myAnnotations.length} annotations! +${points} points`);
       setMyAnnotations([]);
       setDescription('');
       loadAnnotations();
 
-      // Navigate to explore after a short delay
       setTimeout(() => {
         navigate('/explore');
       }, 2000);
-    } catch (error) {
+    } catch {
       toast.error('Failed to save annotations');
     } finally {
       setSaving(false);
@@ -152,6 +169,11 @@ export default function ImageDetail() {
                 </p>
               </div>
             </div>
+            {image.telescope && (
+              <div className="text-xs text-gray-500 mt-2">
+                <span className="text-gray-400">Telescope:</span> {image.telescope}
+              </div>
+            )}
           </div>
 
           {/* Annotation Form */}
@@ -168,10 +190,10 @@ export default function ImageDetail() {
                     <button
                       key={level}
                       onClick={() => setConfidence(level)}
-                      className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                      className={`w-10 h-10 rounded-lg border-2 transition-all text-sm ${
                         confidence >= level
-                          ? 'border-primary-500 bg-primary-900/30'
-                          : 'border-gray-600'
+                          ? 'border-primary-500 bg-primary-900/30 text-primary-400'
+                          : 'border-gray-600 text-gray-500'
                       }`}
                     >
                       {level}
@@ -208,6 +230,19 @@ export default function ImageDetail() {
               </div>
             </div>
           </div>
+
+          {/* Educational toggle */}
+          <button
+            onClick={() => setShowEducation(!showEducation)}
+            className="card w-full text-left flex items-center gap-2 hover:bg-space-purple transition-colors"
+          >
+            <BookOpen className="w-5 h-5 text-purple-400" />
+            <span className="text-sm font-medium">
+              {showEducation ? 'Hide' : 'Show'} Learning Panel
+            </span>
+          </button>
+
+          {showEducation && <EducationalPanel category={selectedCategory} />}
 
           {/* Stats */}
           <div className="card bg-gradient-to-r from-primary-900/30 to-purple-900/30">

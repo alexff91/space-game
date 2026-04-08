@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Image as KonvaImage, Rect, Circle } from 'react-konva';
 import { Image as ImageType, Annotation, AnnotationCoordinates } from '@/types';
 import { ANNOTATION_CATEGORIES, ANNOTATION_TOOLS } from '@/utils/constants';
@@ -31,8 +31,23 @@ export default function ImageViewer({
   const [loadedImage] = useImage(image.imageUrl, 'anonymous');
   const stageRef = useRef<any>(null);
 
-  const containerWidth = 1000;
-  const containerHeight = 700;
+  // Responsive container size
+  const [containerWidth, setContainerWidth] = useState(1000);
+  const [containerHeight, setContainerHeight] = useState(700);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        setContainerWidth(w);
+        setContainerHeight(Math.min(700, Math.max(400, w * 0.7)));
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, []);
 
   const handleWheel = (e: any) => {
     e.evt.preventDefault();
@@ -207,7 +222,7 @@ export default function ImageViewer({
       </div>
 
       {/* Canvas */}
-      <div className="bg-space-darker rounded-lg overflow-hidden border border-primary-900/20">
+      <div ref={containerRef} className="bg-space-darker rounded-lg overflow-hidden border border-primary-900/20">
         <Stage
           ref={stageRef}
           width={containerWidth}

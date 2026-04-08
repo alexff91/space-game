@@ -10,6 +10,10 @@ import Profile from '@/pages/Profile';
 import Leaderboard from '@/pages/Leaderboard';
 import ImageDetail from '@/pages/ImageDetail';
 import Missions from '@/pages/Missions';
+import SkyMap from '@/pages/SkyMap';
+import Gallery from '@/pages/Gallery';
+import Events from '@/pages/Events';
+import Achievements from '@/pages/Achievements';
 import PrivateRoute from '@/components/PrivateRoute';
 import Tutorial from '@/components/Tutorial';
 
@@ -36,6 +40,11 @@ function App() {
           <Route index element={<Home />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route path="sky-map" element={<SkyMap />} />
+          <Route path="gallery" element={<Gallery />} />
+          <Route path="events" element={<Events />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="achievements" element={<Achievements />} />
           <Route
             path="explore"
             element={
@@ -68,7 +77,6 @@ function App() {
               </PrivateRoute>
             }
           />
-          <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
