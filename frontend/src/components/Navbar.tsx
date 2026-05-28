@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import {
   Rocket, User, Trophy, LogOut, Star, Target, MapPin, Camera,
-  Calendar, Award, Menu, X, Gamepad2,
+  Calendar, Menu, X, Gamepad2,
 } from 'lucide-react';
 import { isDemoMode } from '@/services/appMode';
 
