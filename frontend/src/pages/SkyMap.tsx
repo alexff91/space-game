@@ -352,21 +352,21 @@ export default function SkyMap() {
             {/* Toolbar */}
             <div className="flex items-center justify-between p-3 border-b border-primary-900/20 bg-space-blue/50">
               <div className="flex items-center space-x-2">
-                <button onClick={() => setView((v) => ({ ...v, zoom: Math.min(8, v.zoom + 0.5) }))} className="p-2 hover:bg-space-purple rounded" title="Zoom in">
+                <button onClick={() => setView((v) => ({ ...v, zoom: Math.min(8, v.zoom + 0.5) }))} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-space-purple rounded" title="Zoom in">
                   <ZoomIn className="w-5 h-5" />
                 </button>
                 <span className="text-sm text-gray-400 px-2">{view.zoom.toFixed(1)}x</span>
-                <button onClick={() => setView((v) => ({ ...v, zoom: Math.max(0.5, v.zoom - 0.5) }))} className="p-2 hover:bg-space-purple rounded" title="Zoom out">
+                <button onClick={() => setView((v) => ({ ...v, zoom: Math.max(0.5, v.zoom - 0.5) }))} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-space-purple rounded" title="Zoom out">
                   <ZoomOut className="w-5 h-5" />
                 </button>
-                <button onClick={resetView} className="p-2 hover:bg-space-purple rounded ml-2" title="Reset view">
+                <button onClick={resetView} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-space-purple rounded ml-2" title="Reset view">
                   <RotateCcw className="w-5 h-5" />
                 </button>
                 <div className="border-l border-gray-700 h-6 mx-2" />
-                <button onClick={() => setShowLabels((v) => !v)} className={`p-2 rounded ${showLabels ? 'bg-primary-900/30 text-primary-400' : 'hover:bg-space-purple'}`} title="Toggle labels">
+                <button onClick={() => setShowLabels((v) => !v)} className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded ${showLabels ? 'bg-primary-900/30 text-primary-400' : 'hover:bg-space-purple'}`} title="Toggle labels">
                   {showLabels ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
                 </button>
-                <button onClick={() => setShowLines((v) => !v)} className={`p-2 rounded text-sm font-medium ${showLines ? 'bg-primary-900/30 text-primary-400' : 'hover:bg-space-purple text-gray-400'}`} title="Toggle constellation lines">
+                <button onClick={() => setShowLines((v) => !v)} className={`p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded text-sm font-medium ${showLines ? 'bg-primary-900/30 text-primary-400' : 'hover:bg-space-purple text-gray-400'}`} title="Toggle constellation lines">
                   Lines
                 </button>
               </div>

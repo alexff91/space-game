@@ -55,6 +55,23 @@
   }
 }
 
+/* Phone: py-2 leaves a button 40px tall, and a finger needs 44. Only the
+   height changes, and only below the desktop breakpoint - the wide layout
+   keeps the sizes above. */
+@media (max-width: 1023px) {
+  .btn-primary,
+  .btn-secondary {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .input-field {
+    min-height: 44px;
+  }
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

@@ -90,11 +90,11 @@ export default function Events() {
 
       {/* Year selector */}
       <div className="flex items-center justify-center space-x-4 mb-6">
-        <button onClick={() => setSelectedYear((y) => y - 1)} className="p-2 hover:bg-space-purple rounded-lg">
+        <button onClick={() => setSelectedYear((y) => y - 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-space-purple rounded-lg">
           <ChevronLeft className="w-5 h-5" />
         </button>
         <span className="text-2xl font-bold text-primary-400">{selectedYear}</span>
-        <button onClick={() => setSelectedYear((y) => y + 1)} className="p-2 hover:bg-space-purple rounded-lg">
+        <button onClick={() => setSelectedYear((y) => y + 1)} className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-space-purple rounded-lg">
           <ChevronRight className="w-5 h-5" />
         </button>
       </div>
@@ -103,7 +103,7 @@ export default function Events() {
       <div className="flex flex-wrap justify-center gap-2 mb-8">
         <button
           onClick={() => setSelectedType('all')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          className={`px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors ${
             selectedType === 'all' ? 'bg-primary-600 text-white' : 'bg-space-blue text-gray-400 hover:text-white'
           }`}
         >
@@ -115,7 +115,7 @@ export default function Events() {
             <button
               key={type}
               onClick={() => setSelectedType(type)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              className={`px-4 py-2 min-h-[44px] rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 selectedType === type
                   ? 'text-white'
                   : 'bg-space-blue text-gray-400 hover:text-white'

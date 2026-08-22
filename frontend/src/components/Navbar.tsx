@@ -55,7 +55,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group flex-shrink-0">
+          <Link to="/" className="flex items-center space-x-2 group flex-shrink-0 py-2">
             <Rocket className="w-8 h-8 text-primary-500 group-hover:rotate-12 transition-transform" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary-400 to-purple-400 bg-clip-text text-transparent">
               AstroQuest
@@ -130,7 +130,7 @@ export default function Navbar() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="lg:hidden p-2 text-gray-300 hover:text-white"
+            className="lg:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-300 hover:text-white"
           >
             {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>

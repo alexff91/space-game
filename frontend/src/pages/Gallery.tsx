@@ -90,7 +90,7 @@ export default function Gallery() {
           href="https://api.nasa.gov/#apod"
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-primary-400 mt-2"
+          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-primary-400 mt-2 py-[14px] -my-[14px] lg:py-0 lg:my-0 lg:mt-2"
         >
           api.nasa.gov/planetary/apod <ExternalLink className="w-3 h-3" />
         </a>
