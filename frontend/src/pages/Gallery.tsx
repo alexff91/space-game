@@ -1,52 +1,51 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, X, ChevronLeft, ChevronRight, ExternalLink, Calendar, Search } from 'lucide-react';
-import { DEMO_APOD_GALLERY, DEMO_IMAGES, type APODItem } from '@/services/demoData';
-import { isDemoMode } from '@/services/demoData';
+import { Camera, X, ChevronLeft, ChevronRight, ExternalLink, Calendar, Search, RefreshCw, AlertCircle } from 'lucide-react';
+import { fetchApod, getNasaApiKey, type APODItem } from '@/services/apodService';
 
 /**
- * Gallery page — showcases NASA APOD images and the app's own
- * astronomical image collection in a Pinterest-style masonry layout.
+ * Галерея NASA Astronomy Picture of the Day.
+ *
+ * ПОЧЕМУ переписана: страница обещала снимки NASA, а показывала 8 зашитых
+ * ссылок с придуманными именами файлов — все восемь отдавали 404, то есть
+ * посетитель видел набор битых картинок под заголовком «From NASA's Gallery».
+ * Вторая вкладка, «Observatory Collection», состояла из тех же битых ссылок
+ * плюс выдуманные счётчики разметки (24, 42, 56...) и удалена целиком.
+ * Теперь запрос уходит в api.nasa.gov, а при неудаче страница говорит,
+ * что данных нет, и предлагает повторить.
  */
-
-type GalleryTab = 'apod' | 'collection';
-
 export default function Gallery() {
-  const [tab, setTab] = useState<GalleryTab>('apod');
   const [selectedImage, setSelectedImage] = useState<APODItem | null>(null);
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const [search, setSearch] = useState('');
-  const [apodImages, setApodImages] = useState<APODItem[]>(DEMO_APOD_GALLERY);
-  const [loading, setLoading] = useState(false);
+  const [apodImages, setApodImages] = useState<APODItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Try fetching real APOD data if API key is available
-  useEffect(() => {
-    const apiKey = import.meta.env.VITE_NASA_API_KEY;
-    if (apiKey && apiKey !== 'DEMO_KEY' && !isDemoMode()) {
-      setLoading(true);
-      fetch(`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&count=12`)
-        .then((r) => r.json())
-        .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setApodImages(data.filter((d: APODItem) => d.media_type === 'image'));
-          }
-        })
-        .catch(() => { /* fall back to demo data */ })
-        .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const images = await fetchApod(12);
+      setApodImages(images);
+    } catch (e: any) {
+      // Никакого запасного набора картинок: если NASA не ответило,
+      // показывать нечего, и об этом надо сказать прямо.
+      setApodImages([]);
+      setError(e?.message || 'Could not reach api.nasa.gov');
+    } finally {
+      setLoading(false);
     }
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const filteredApod = apodImages.filter(
     (img) =>
       !search || img.title.toLowerCase().includes(search.toLowerCase()) ||
       img.explanation.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const filteredCollection = DEMO_IMAGES.filter(
-    (img) =>
-      !search || img.title.toLowerCase().includes(search.toLowerCase()) ||
-      (img.description || '').toLowerCase().includes(search.toLowerCase()) ||
-      (img.tags || []).some((t) => t.toLowerCase().includes(search.toLowerCase())),
   );
 
   const openLightbox = (img: APODItem, idx: number) => {
@@ -55,10 +54,9 @@ export default function Gallery() {
   };
 
   const navigate = (dir: -1 | 1) => {
-    const list = tab === 'apod' ? filteredApod : [];
     const next = selectedIdx + dir;
-    if (next >= 0 && next < list.length) {
-      setSelectedImage(list[next]);
+    if (next >= 0 && next < filteredApod.length) {
+      setSelectedImage(filteredApod[next]);
       setSelectedIdx(next);
     }
   };
@@ -75,47 +73,38 @@ export default function Gallery() {
     return () => window.removeEventListener('keydown', handler);
   });
 
+  const usingSharedKey = getNasaApiKey() === 'DEMO_KEY';
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-2 flex items-center justify-center gap-3">
           <Camera className="w-10 h-10 text-primary-400" />
-          Space Gallery
+          NASA Picture of the Day
         </h1>
         <p className="text-gray-400 text-lg">
-          Stunning astronomical images from NASA, ESA, and the world's greatest telescopes
+          Fetched live from NASA&apos;s public APOD API each time this page loads
         </p>
+        <a
+          href="https://api.nasa.gov/#apod"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-primary-400 mt-2"
+        >
+          api.nasa.gov/planetary/apod <ExternalLink className="w-3 h-3" />
+        </a>
       </div>
 
-      {/* Tab bar + search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <div className="flex space-x-1 bg-space-blue rounded-lg p-1">
-          <button
-            onClick={() => setTab('apod')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'apod' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            NASA APOD
-          </button>
-          <button
-            onClick={() => setTab('collection')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === 'collection' ? 'bg-primary-600 text-white' : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            Observatory Collection
-          </button>
-        </div>
-
-        <div className="relative w-full sm:w-64">
+      {/* Search */}
+      <div className="flex justify-center mb-8">
+        <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search images..."
+            placeholder="Search the loaded images..."
             className="input-field pl-10 text-sm"
           />
         </div>
@@ -123,20 +112,43 @@ export default function Gallery() {
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center justify-center py-20">
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
           <div className="spinner" />
+          <p className="text-gray-500 text-sm">Asking api.nasa.gov...</p>
         </div>
       )}
 
-      {/* APOD tab */}
-      {!loading && tab === 'apod' && (
+      {/* Ошибка: честное «нет данных» вместо подставленных картинок */}
+      {!loading && error && (
+        <div className="card max-w-xl mx-auto text-center py-12">
+          <AlertCircle className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">No data</h2>
+          <p className="text-gray-400 text-sm leading-relaxed mb-2">
+            NASA&apos;s APOD API did not return anything, so there are no images to show.
+          </p>
+          <p className="text-gray-500 text-xs mb-6">{error}</p>
+          {usingSharedKey && (
+            <p className="text-gray-500 text-xs mb-6 leading-relaxed">
+              This build uses NASA&apos;s shared <code>DEMO_KEY</code>, which is limited to
+              roughly 30 requests an hour per address — that is the usual reason for this.
+              Set <code>VITE_NASA_API_KEY</code> to your own free key to avoid it.
+            </p>
+          )}
+          <button onClick={load} className="btn-primary inline-flex items-center gap-2">
+            <RefreshCw className="w-4 h-4" /> Try again
+          </button>
+        </div>
+      )}
+
+      {/* Grid */}
+      {!loading && !error && (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredApod.map((img, idx) => (
             <motion.div
-              key={img.date}
+              key={`${img.date}-${idx}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
+              transition={{ delay: Math.min(idx, 8) * 0.05 }}
               className="group cursor-pointer"
               onClick={() => openLightbox(img, idx)}
             >
@@ -165,55 +177,13 @@ export default function Gallery() {
         </div>
       )}
 
-      {/* Collection tab */}
-      {!loading && tab === 'collection' && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredCollection.map((img, idx) => (
-            <motion.div
-              key={img.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className="group"
-            >
-              <div className="card p-0 overflow-hidden hover:shadow-2xl hover:scale-[1.02] transition-all">
-                <div className="aspect-square bg-space-darker overflow-hidden relative">
-                  <img
-                    src={img.imageUrl}
-                    alt={img.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform">
-                    <p className="text-sm text-gray-200 line-clamp-3">{img.description}</p>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-semibold text-sm line-clamp-2 mb-2">{img.title}</h3>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-primary-400 font-medium">{img.source.toUpperCase()}</span>
-                    <span className="text-gray-500">{img.telescope}</span>
-                  </div>
-                  {img.tags && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {img.tags.slice(0, 3).map((tag) => (
-                        <span key={tag} className="px-2 py-0.5 bg-space-purple rounded-full text-xs text-gray-300">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+      {/* Empty search */}
+      {!loading && !error && filteredApod.length === 0 && (
+        <div className="text-center py-20 text-gray-400">
+          {apodImages.length === 0
+            ? 'No data — NASA returned no images for this request.'
+            : 'No images match your search.'}
         </div>
-      )}
-
-      {/* Empty state */}
-      {!loading && filteredApod.length === 0 && tab === 'apod' && (
-        <div className="text-center py-20 text-gray-400">No images match your search.</div>
       )}
 
       {/* Lightbox */}
@@ -261,9 +231,17 @@ export default function Gallery() {
                 <h2 className="text-2xl font-bold mb-2">{selectedImage.title}</h2>
                 <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
                   <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {selectedImage.date}</span>
-                  {selectedImage.copyright && <span>Credit: {selectedImage.copyright}</span>}
+                  <span>Credit: {selectedImage.copyright || 'NASA (public domain)'}</span>
                 </div>
                 <p className="text-gray-300 leading-relaxed mb-4">{selectedImage.explanation}</p>
+                <a
+                  href={`https://apod.nasa.gov/apod/ap${selectedImage.date.slice(2).replace(/-/g, '')}.html`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-primary-400 hover:text-primary-300 mr-6"
+                >
+                  Original APOD page <ExternalLink className="w-4 h-4" />
+                </a>
                 {selectedImage.hdurl && (
                   <a
                     href={selectedImage.hdurl}
@@ -271,7 +249,7 @@ export default function Gallery() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm text-primary-400 hover:text-primary-300"
                   >
-                    View Full Resolution <ExternalLink className="w-4 h-4" />
+                    Full resolution <ExternalLink className="w-4 h-4" />
                   </a>
                 )}
               </div>

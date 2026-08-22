@@ -1,7 +1,17 @@
 import { create } from 'zustand';
 import { User } from '@/types';
 import { authService } from '@/services/authService';
-import { isDemoMode, DEMO_USER } from '@/services/demoData';
+import { isDemoMode } from '@/services/appMode';
+
+/**
+ * ПОЧЕМУ выброшен демо-вход: раньше при отсутствии бэкенда форма входа
+ * принимала любой email с любым паролем и создавала пользователя с 4250
+ * очками, 6 уровнем и 87 разметками. Это не «упрощение для демо», а
+ * готовая учётная запись с выдуманной историей, которую человек считал
+ * своей. Без сервера войти некуда — так теперь и написано.
+ */
+
+const NO_BACKEND = 'There is no backend in this build, so there are no accounts to sign in to.';
 
 interface AuthState {
   user: User | null;
@@ -12,26 +22,19 @@ interface AuthState {
   register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   fetchCurrentUser: () => Promise<void>;
-  /** Enter demo mode — sets up a demo user without backend */
-  enterDemoMode: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
-  isAuthenticated: authService.isAuthenticated(),
+  isAuthenticated: !isDemoMode() && authService.isAuthenticated(),
   isLoading: false,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
   login: async (email, password) => {
+    if (isDemoMode()) throw new Error(NO_BACKEND);
     set({ isLoading: true });
     try {
-      if (isDemoMode()) {
-        // Demo mode: accept any credentials
-        localStorage.setItem('token', 'demo-token');
-        set({ user: DEMO_USER, isAuthenticated: true });
-        return;
-      }
       const response = await authService.login({ email, password });
       set({ user: response.user, isAuthenticated: true });
     } finally {
@@ -40,14 +43,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (username, email, password) => {
+    if (isDemoMode()) throw new Error(NO_BACKEND);
     set({ isLoading: true });
     try {
-      if (isDemoMode()) {
-        localStorage.setItem('token', 'demo-token');
-        const user = { ...DEMO_USER, username, email };
-        set({ user, isAuthenticated: true });
-        return;
-      }
       const response = await authService.register({ username, email, password });
       set({ user: response.user, isAuthenticated: true });
     } finally {
@@ -56,40 +54,26 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    if (!isDemoMode()) {
-      try { await authService.logout(); } catch { /* ignore */ }
-    }
+    try { await authService.logout(); } catch { /* ignore */ }
     localStorage.removeItem('token');
     set({ user: null, isAuthenticated: false });
   },
 
   fetchCurrentUser: async () => {
-    if (!authService.isAuthenticated()) {
+    if (isDemoMode() || !authService.isAuthenticated()) {
       return;
     }
 
     set({ isLoading: true });
     try {
-      if (isDemoMode()) {
-        set({ user: DEMO_USER, isAuthenticated: true });
-        return;
-      }
       const response = await authService.getCurrentUser();
       set({ user: response.data, isAuthenticated: true });
     } catch {
-      // If backend is down, fall back to demo mode
-      if (isDemoMode()) {
-        set({ user: DEMO_USER, isAuthenticated: true });
-      } else {
-        set({ user: null, isAuthenticated: false });
-      }
+      // Сервер не подтвердил сессию — значит её нет. Показывать «вошли»
+      // без подтверждения нельзя.
+      set({ user: null, isAuthenticated: false });
     } finally {
       set({ isLoading: false });
     }
-  },
-
-  enterDemoMode: () => {
-    localStorage.setItem('token', 'demo-token');
-    set({ user: DEMO_USER, isAuthenticated: true });
   },
 }));

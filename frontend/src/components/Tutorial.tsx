@@ -13,8 +13,10 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Welcome to AstroQuest!',
     description:
-      'Join thousands of citizen scientists in analyzing real astronomical images from NASA, ESA, and the Hubble Space Telescope. Your annotations help researchers discover new celestial phenomena!',
-    tip: 'Every annotation you make contributes to actual space research.',
+      'This platform lets you mark objects on astronomical images and keep a record of what you found. Annotations are stored in this platform\'s own database.',
+    // ПОЧЕМУ убрано «вклад в настоящие исследования»: разметка никуда за
+    // пределы этой базы не уходит, и обещать обратное нельзя.
+    tip: 'Nothing here is forwarded to any observatory or research group.',
   },
   {
     title: 'Viewing Images',
@@ -38,7 +40,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     title: 'Earn Points & Level Up',
     description:
       'Earn points for every annotation you make. When your annotations match with others or get validated by researchers, you earn bonus points! Level up to unlock new achievements.',
-    tip: 'Validated annotations give you 50 bonus points!',
+    tip: 'Points are awarded by the server, not calculated in your browser.',
   },
   {
     title: 'Daily Challenges',
@@ -49,7 +51,7 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     title: 'Ready to Explore!',
     description:
-      "You're all set! Start exploring the cosmos and help advance our understanding of the universe. Remember: there are no wrong answers, only discoveries waiting to be made.",
+      "You're all set. Mark what you see, say how sure you are, and let the record show where people disagree.",
     tip: 'Have fun and happy exploring! 🚀',
   },
 ];

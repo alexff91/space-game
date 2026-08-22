@@ -2,14 +2,20 @@ import { useEffect, useState } from 'react';
 import { Flame, Trophy, Calendar } from 'lucide-react';
 import MissionCard from '@/components/MissionCard';
 import { api } from '@/services/api';
-import { isDemoMode, DEMO_MISSIONS, DEMO_DAILY_CHALLENGE, DEMO_STREAK } from '@/services/demoData';
 import toast from 'react-hot-toast';
 
+/**
+ * ПОЧЕМУ убраны запасные данные: раньше страница брала четыре выдуманных
+ * задания и дорисовывала им прогресс через Math.random() — при каждой
+ * перезагрузке «пройдено» становилось другим числом. Серия дней и дневное
+ * задание тоже были константами. Считать это может только сервер.
+ */
 export default function Missions() {
   const [missions, setMissions] = useState<any[]>([]);
   const [dailyChallenge, setDailyChallenge] = useState<any>(null);
   const [streak, setStreak] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
@@ -17,26 +23,21 @@ export default function Missions() {
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
-      if (isDemoMode()) {
-        setMissions(DEMO_MISSIONS.map((m) => ({ ...m, progress: Math.floor(Math.random() * 80) })));
-        setDailyChallenge(DEMO_DAILY_CHALLENGE);
-        setStreak(DEMO_STREAK);
-      } else {
-        const [missionsRes, dailyRes, streakRes] = await Promise.all([
-          api.get<any>('/missions'),
-          api.get<any>('/missions/daily'),
-          api.get<any>('/streak'),
-        ]);
-        setMissions(missionsRes);
-        setDailyChallenge(dailyRes);
-        setStreak(streakRes);
-      }
+      const [missionsRes, dailyRes, streakRes] = await Promise.all([
+        api.get<any>('/missions'),
+        api.get<any>('/missions/daily'),
+        api.get<any>('/streak'),
+      ]);
+      setMissions(Array.isArray(missionsRes) ? missionsRes : []);
+      setDailyChallenge(dailyRes ?? null);
+      setStreak(streakRes ?? null);
     } catch {
-      // Fall back to demo data
-      setMissions(DEMO_MISSIONS.map((m) => ({ ...m, progress: Math.floor(Math.random() * 80) })));
-      setDailyChallenge(DEMO_DAILY_CHALLENGE);
-      setStreak(DEMO_STREAK);
+      setMissions([]);
+      setDailyChallenge(null);
+      setStreak(null);
+      setError('No data — missions could not be loaded from the server.');
     } finally {
       setLoading(false);
     }
@@ -44,12 +45,6 @@ export default function Missions() {
 
   const handleStreakCheck = async () => {
     try {
-      if (isDemoMode()) {
-        const updated = { ...DEMO_STREAK, currentStreak: (streak?.currentStreak || 0) + 1 };
-        setStreak(updated);
-        toast.success(`Streak updated! Current streak: ${updated.currentStreak} days`);
-        return;
-      }
       const response = await api.post<any>('/streak/check', {});
       setStreak(response);
       toast.success(`Streak updated! Current streak: ${response.currentStreak} days`);
@@ -60,11 +55,6 @@ export default function Missions() {
 
   const handleFreezeStreak = async () => {
     try {
-      if (isDemoMode()) {
-        setStreak({ ...streak, streakFrozen: true });
-        toast.success('Streak frozen for 1 day!');
-        return;
-      }
       await api.post('/streak/freeze', {});
       toast.success('Streak frozen for 1 day!');
       loadData();
@@ -98,7 +88,7 @@ export default function Missions() {
 
           <div className="text-center mb-4">
             <div className="text-5xl font-bold text-orange-400 mb-2">
-              {streak?.currentStreak || 0}
+              {streak ? streak.currentStreak : <span className="text-xl text-gray-500">No data</span>}
             </div>
             <div className="text-sm text-gray-400">
               days in a row
@@ -107,7 +97,7 @@ export default function Missions() {
 
           <div className="flex items-center justify-between text-sm mb-4">
             <span className="text-gray-400">Longest Streak:</span>
-            <span className="font-semibold">{streak?.longestStreak || 0} days</span>
+            <span className="font-semibold">{streak ? `${streak.longestStreak} days` : 'No data'}</span>
           </div>
 
           <div className="space-y-2">
@@ -172,7 +162,7 @@ export default function Missions() {
             ))
           ) : (
             <div className="col-span-2 text-center py-12">
-              <p className="text-gray-400">No active missions at the moment.</p>
+              <p className="text-gray-400">{error ?? 'No active missions at the moment.'}</p>
             </div>
           )}
         </div>

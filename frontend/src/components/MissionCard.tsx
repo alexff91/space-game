@@ -24,7 +24,10 @@ interface MissionCardProps {
 }
 
 export default function MissionCard({ mission, onSelect }: MissionCardProps) {
-  const progress = mission.progress || 0;
+  // ПОЧЕМУ не `|| 0`: отсутствие прогресса и нулевой прогресс — разные вещи,
+  // и рисовать пустую полосу вместо «неизвестно» значит утверждать лишнее.
+  const hasProgress = typeof mission.progress === 'number';
+  const progress = mission.progress ?? 0;
   const daysLeft = mission.endDate
     ? Math.ceil(
         (new Date(mission.endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
@@ -75,7 +78,7 @@ export default function MissionCard({ mission, onSelect }: MissionCardProps) {
       <p className="text-gray-400 text-sm mb-4">{mission.description}</p>
 
       {/* Progress */}
-      {progress !== undefined && (
+      {hasProgress ? (
         <div className="mb-4">
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-gray-400">Progress</span>
@@ -87,6 +90,11 @@ export default function MissionCard({ mission, onSelect }: MissionCardProps) {
               style={{ width: `${progress}%` }}
             />
           </div>
+        </div>
+      ) : (
+        <div className="flex items-center justify-between text-sm mb-4">
+          <span className="text-gray-400">Progress</span>
+          <span className="text-gray-500">No data</span>
         </div>
       )}
 
@@ -107,7 +115,7 @@ export default function MissionCard({ mission, onSelect }: MissionCardProps) {
           )}
         </div>
 
-        {progress >= 100 && (
+        {hasProgress && progress >= 100 && (
           <span className="px-3 py-1 bg-green-900/30 text-green-400 rounded-full text-sm font-semibold">
             Completed!
           </span>

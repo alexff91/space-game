@@ -1,13 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+/**
+ * ПОЧЕМУ файл переписан: прежние тесты закрепляли ложь как требование —
+ * они падали, если на странице нет «10,000+ Images Analyzed» и
+ * «Join thousands of citizen scientists». Ни одно из этих чисел никто
+ * не считал, а тест обязывал их показывать.
+ */
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@/test/test-utils';
 import Home from '@/pages/Home';
 
-const mockAuthStore = {
-  isAuthenticated: false,
-};
-
 vi.mock('@/store/authStore', () => ({
-  useAuthStore: () => mockAuthStore,
+  useAuthStore: () => ({ isAuthenticated: false }),
 }));
 
 // Mock framer-motion to avoid animation issues in tests
@@ -19,64 +21,40 @@ vi.mock('framer-motion', () => ({
 }));
 
 describe('Home Page', () => {
-  beforeEach(() => {
-    mockAuthStore.isAuthenticated = false;
-  });
-
   it('should render the hero title', () => {
     render(<Home />);
     expect(screen.getByText('Explore the Universe')).toBeInTheDocument();
   });
 
-  it('should render the tagline about citizen scientists', () => {
+  it('без бэкенда ведёт только туда, где данные настоящие', () => {
     render(<Home />);
-    expect(
-      screen.getByText(/citizen scientists analyzing real astronomical images/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText('Open the Gallery')).toBeInTheDocument();
+    expect(screen.getByText(/Explore the Sky Map/)).toBeInTheDocument();
+    // Регистрации нет: аккаунт хранить негде.
+    expect(screen.queryByText('Create an Account')).not.toBeInTheDocument();
   });
 
-  it('should show Get Started and Sign In buttons when not authenticated', () => {
-    mockAuthStore.isAuthenticated = false;
+  it('перечисляет только то, что действительно работает', () => {
     render(<Home />);
-
-    expect(screen.getByText('Get Started Free')).toBeInTheDocument();
-    expect(screen.getByText('Sign In')).toBeInTheDocument();
+    expect(screen.getByText('NASA Picture of the Day')).toBeInTheDocument();
+    expect(screen.getByText('Interactive Sky Map')).toBeInTheDocument();
+    expect(screen.getByText('Event Calendar')).toBeInTheDocument();
   });
 
-  it('should show Start Exploring button when authenticated', () => {
-    mockAuthStore.isAuthenticated = true;
+  it('счётчики сообщества помечены как отсутствующие', () => {
     render(<Home />);
-
-    expect(screen.getByText('Start Exploring')).toBeInTheDocument();
-    expect(screen.queryByText('Get Started Free')).not.toBeInTheDocument();
+    expect(screen.getByText('Community statistics')).toBeInTheDocument();
+    // Четыре подписи — и под каждой «No data», а не число.
+    expect(screen.getAllByText('No data')).toHaveLength(4);
+    expect(screen.getByText('Images analysed')).toBeInTheDocument();
+    expect(screen.getByText('Discoveries')).toBeInTheDocument();
   });
 
-  it('should render 4 feature cards', () => {
+  it('не выдаёт себя за проект гражданской науки', () => {
     render(<Home />);
-
-    expect(screen.getByText('Real Space Images')).toBeInTheDocument();
-    expect(screen.getByText('Make Discoveries')).toBeInTheDocument();
-    expect(screen.getByText('Contribute to Science')).toBeInTheDocument();
-    expect(screen.getByText('Earn Rewards')).toBeInTheDocument();
-  });
-
-  it('should render statistics section', () => {
-    render(<Home />);
-
-    expect(screen.getByText('10,000+')).toBeInTheDocument();
-    expect(screen.getByText('Images Analyzed')).toBeInTheDocument();
-    expect(screen.getByText('50,000+')).toBeInTheDocument();
-    expect(screen.getByText('Annotations Made')).toBeInTheDocument();
-    expect(screen.getByText('1,000+')).toBeInTheDocument();
-    expect(screen.getByText('Active Scientists')).toBeInTheDocument();
-  });
-
-  it('should render How It Works section with 3 steps', () => {
-    render(<Home />);
-
-    expect(screen.getByText('How It Works')).toBeInTheDocument();
-    expect(screen.getByText('View Images')).toBeInTheDocument();
-    expect(screen.getByText('Annotate Objects')).toBeInTheDocument();
-    expect(screen.getByText('Earn Recognition')).toBeInTheDocument();
+    const text = document.body.textContent || '';
+    expect(text).not.toMatch(/contributes? to (actual|real)/i);
+    // Вместо обещания — ссылка на проект, где вклад действительно настоящий.
+    expect(screen.getByText('Zooniverse')).toBeInTheDocument();
   });
 });

@@ -10,6 +10,8 @@ node_modules/
 # Production
 /build
 /dist
+# сборка фронтенда лежит во frontend/dist — правило выше её не ловит
+dist/
 
 # Environment variables
 .env

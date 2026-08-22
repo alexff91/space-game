@@ -1,6 +1,8 @@
-# AstroQuest - Citizen Science Astronomy Platform
+# AstroQuest - Astronomy Image Annotation Platform
 
-> Analyze real astronomical images from NASA, ESA, and Hubble. Discover galaxies, earn achievements, and contribute to space research -- all in your browser.
+> Browse NASA's picture of the day, explore a star chart built from catalogue positions, and check what happens in the sky this year. With its backend running, it also records image annotations in its own database.
+
+**AstroQuest is not a citizen-science project.** Nothing recorded here is forwarded to any observatory, survey or research group. If you want your work to count towards published research, use [Zooniverse](https://www.zooniverse.org/).
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)
@@ -13,9 +15,15 @@
 
 ## What is AstroQuest?
 
-AstroQuest turns deep-space image analysis into an engaging experience. Users examine authentic astronomical images from **NASA**, **ESA**, the **Hubble Space Telescope**, and **JWST**, identify celestial objects using interactive annotation tools, and earn points -- all while contributing meaningful data to ongoing research.
+AstroQuest is a React front end plus an optional Express/Postgres backend. What it does depends on whether that backend is running.
 
-The platform features a **built-in demo mode** that works without any API keys or backend, making it instantly explorable.
+**Deployed without a backend (the default static build):**
+- NASA's Astronomy Picture of the Day, fetched live from `api.nasa.gov` on every page load. If NASA does not answer, the page says "No data" rather than showing something else.
+- An interactive sky map of seven constellations, drawn from J2000 catalogue positions and visual magnitudes.
+- A 2026 event calendar where every date carries a link to the source it was checked against.
+- A permanent banner stating that there is no backend, nothing is saved and nothing is sent anywhere. Annotation, scores, missions, the leaderboard and sign-in are switched off, because without a server every number on those pages would be invented.
+
+**With the backend running (`VITE_API_URL` pointing at it):** accounts, image annotation with confidence scoring, missions, streaks and a leaderboard. Annotations are stored in this platform's own database and go nowhere else.
 
 ### Screenshots
 
@@ -37,10 +45,10 @@ To add real screenshots:
 | Konva canvas with zoom/pan, category selection, confidence scoring | Podium-style top 3 with full ranked list |
 | ![Annotate](docs/screenshots/annotate.png) | ![Leaderboard](docs/screenshots/leaderboard.png) |
 
-| Space Gallery | Achievements |
+| Space Gallery | Event Calendar |
 |:-:|:-:|
 | NASA APOD collection with lightbox and search | Rarity-tiered badges: Common, Rare, Epic, Legendary |
-| ![Gallery](docs/screenshots/gallery.png) | ![Achievements](docs/screenshots/achievements.png) |
+| ![Gallery](docs/screenshots/gallery.png) | ![Events](docs/screenshots/events.png) |
 
 ---
 
@@ -69,8 +77,6 @@ To add real screenshots:
 
 ### Gamification
 - **10-level progression** with exponential XP curve (0 to 16,000 XP)
-- **12 achievements** across 4 rarity tiers: Common, Rare, Epic, Legendary
-- **Achievement categories**: Annotations, Discoveries, Missions, Social, Special
 - **Daily streaks** with streak-freeze mechanic
 - **Missions** with difficulty tiers, progress bars, point + XP rewards
 - **Daily challenges** with 24-hour rotating objectives
@@ -87,12 +93,14 @@ To add real screenshots:
 - Identification tips and fascinating astronomical facts
 - 7-step interactive onboarding tutorial
 
-### Demo Mode
-- **Works without any backend or API keys**
-- 8 curated NASA/Hubble images with full metadata
-- 12 demo leaderboard users, missions, achievements, streaks
-- Realistic annotation workflow with point calculations
-- One-click "Try Demo" button on the home page
+### Running without a backend
+- Works with no backend and no API key (NASA's shared `DEMO_KEY` is used by default, ~30 requests/hour per address).
+- A permanent, non-dismissible banner on every page states that nothing is saved or sent anywhere.
+- Gallery images come live from NASA; a failed request shows "No data", never a substitute image.
+- Sky map and event calendar work offline of the backend because they are static reference data with cited sources.
+- Annotation, sign-in, profile, missions and the leaderboard are switched off and explain why.
+
+> Earlier versions filled these pages with invented data instead: a signed-in user with 4,250 points, a twelve-person leaderboard of people who do not exist, counters reading "10K+ images analysed", and eight NASA image links whose filenames were made up (all eight returned 404). None of that is in the codebase any more, and `frontend/src/__tests__/honesty.test.tsx` fails if it comes back.
 
 ---
 
@@ -107,15 +115,15 @@ To add real screenshots:
  │  │  Pages   │  │Components│  │ Services │  │   Store   │           │
  │  │          │  │          │  │          │  │ (Zustand) │           │
  │  │ Home     │  │ Navbar   │  │ api.ts   │  │           │           │
- │  │ SkyMap   │  │ ImageView│  │ demoData │  │ authStore │           │
- │  │ Gallery  │  │ Tutorial │  │ demoSvc  │  └───────────┘           │
+ │  │ SkyMap   │  │ ImageView│  │ apodSvc  │  │ authStore │           │
+ │  │ Gallery  │  │ DemoBannr│  │ refData  │  └───────────┘           │
  │  │ Events   │  │ Mission  │  │ authSvc  │                          │
  │  │ Explore  │  │ Educate  │  │ imageSvc │     Tailwind CSS         │
  │  │ Annotate │  │ Layout   │  │ userSvc  │     Framer Motion        │
  │  │ Missions │  │ Private  │  │ annotSvc │     Konva Canvas         │
  │  │ Profile  │  └──────────┘  └──────────┘     React Router v6      │
- │  │ Achieve  │                                  React Query          │
- │  │ Leader   │         Demo Mode: No backend needed!                 │
+ │  │ Leader   │                                  React Query          │
+ │  │ Login    │      No backend? Gallery, sky map and events only.    │
  │  └──────────┘                                                       │
  └─────────────────────────┬────────────────────────────────────────────┘
                            │  REST API (JSON)
@@ -177,10 +185,11 @@ space-game/
 │   ├── src/
 │   │   ├── components/          # Navbar, ImageViewer, MissionCard, Tutorial, EducationalPanel
 │   │   ├── pages/               # Home, SkyMap, Gallery, Events, Explore, Missions,
-│   │   │                        # ImageDetail, Profile, Achievements, Leaderboard, Login, Register
-│   │   ├── services/            # API client (api.ts), demo data (demoData.ts, demoService.ts),
+│   │   │                        # ImageDetail, Profile, Leaderboard, Login, Register
+│   │   ├── services/            # API client (api.ts), NASA APOD client (apodService.ts),
+│   │   │                        # sourced reference data (referenceData.ts), appMode.ts,
 │   │   │                        # auth, image, annotation, user services
-│   │   ├── store/               # Zustand auth store with demo mode support
+│   │   ├── store/               # Zustand auth store
 │   │   ├── types/               # TypeScript interfaces
 │   │   ├── utils/               # Constants, game logic, level calculations
 │   │   ├── test/                # Test setup and utilities
@@ -225,8 +234,9 @@ npm install
 npm run dev
 # Open http://localhost:3000
 
-# The app runs in demo mode automatically when no API URL is configured.
-# Click "Try Demo" on the home page to explore all features instantly.
+# With no VITE_API_URL configured the app runs without a backend: gallery,
+# sky map and event calendar work; everything that would need a server is
+# switched off and says so.
 ```
 
 ### Full-Stack with Docker

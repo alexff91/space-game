@@ -3,9 +3,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import {
   Rocket, User, Trophy, LogOut, Star, Target, MapPin, Camera,
-  Calendar, Award, Menu, X,
+  Calendar, Menu, X,
 } from 'lucide-react';
-import { isDemoMode } from '@/services/demoData';
+import { isDemoMode } from '@/services/appMode';
 
 interface NavLink {
   to: string;
@@ -13,16 +13,17 @@ interface NavLink {
   label: string;
   authRequired?: boolean;
   publicOnly?: boolean;
+  /** Ссылка ведёт на экран, который без сервера показывать нечем. */
+  backendRequired?: boolean;
 }
 
 const NAV_LINKS: NavLink[] = [
-  { to: '/explore', icon: <Star className="w-5 h-5" />, label: 'Explore', authRequired: true },
-  { to: '/missions', icon: <Target className="w-5 h-5" />, label: 'Missions', authRequired: true },
+  { to: '/explore', icon: <Star className="w-5 h-5" />, label: 'Explore', authRequired: true, backendRequired: true },
+  { to: '/missions', icon: <Target className="w-5 h-5" />, label: 'Missions', authRequired: true, backendRequired: true },
   { to: '/sky-map', icon: <MapPin className="w-5 h-5" />, label: 'Sky Map' },
   { to: '/gallery', icon: <Camera className="w-5 h-5" />, label: 'Gallery' },
   { to: '/events', icon: <Calendar className="w-5 h-5" />, label: 'Events' },
-  { to: '/achievements', icon: <Award className="w-5 h-5" />, label: 'Badges' },
-  { to: '/leaderboard', icon: <Trophy className="w-5 h-5" />, label: 'Leaderboard' },
+  { to: '/leaderboard', icon: <Trophy className="w-5 h-5" />, label: 'Leaderboard', backendRequired: true },
 ];
 
 export default function Navbar() {
@@ -35,7 +36,11 @@ export default function Navbar() {
     window.location.href = '/';
   };
 
+  const demoMode = isDemoMode();
+
   const visibleLinks = NAV_LINKS.filter((link) => {
+    // Без сервера этих экранов нет — не зовём туда, куда идти незачем.
+    if (link.backendRequired && demoMode) return false;
     if (link.authRequired && !isAuthenticated) return false;
     if (link.publicOnly && isAuthenticated) return false;
     return true;
@@ -43,10 +48,10 @@ export default function Navbar() {
 
   const isActive = (path: string) => location.pathname === path;
 
-  const demoMode = isDemoMode();
-
   return (
-    <nav className="bg-space-blue/95 backdrop-blur-md border-b border-primary-900/20 shadow-lg sticky top-0 z-40">
+    // Прилипанием к верху занимается Layout — он держит вместе плашку и навигацию,
+    // чтобы плашка не перекрывала меню и не уезжала из виду.
+    <nav className="bg-space-blue/95 backdrop-blur-md border-b border-primary-900/20 shadow-lg">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -80,9 +85,11 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Auth actions (desktop) */}
+          {/* Auth actions (desktop).
+              В демо-режиме входа нет вовсе: раньше форма принимала любой пароль
+              и выдавала выдуманного пользователя с 4250 очками. */}
           <div className="hidden lg:flex items-center space-x-3">
-            {isAuthenticated ? (
+            {demoMode ? null : isAuthenticated ? (
               <>
                 <Link
                   to="/profile"
@@ -148,9 +155,9 @@ export default function Navbar() {
               </Link>
             ))}
 
-            <div className="border-t border-gray-700 my-2" />
+            {!demoMode && <div className="border-t border-gray-700 my-2" />}
 
-            {isAuthenticated ? (
+            {demoMode ? null : isAuthenticated ? (
               <>
                 <Link
                   to="/profile"

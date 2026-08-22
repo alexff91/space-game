@@ -4,7 +4,6 @@ import { imageService } from '@/services/imageService';
 import { annotationService } from '@/services/annotationService';
 import { Image, Annotation, AnnotationCoordinates } from '@/types';
 import { useAuthStore } from '@/store/authStore';
-import { isDemoMode, DEMO_IMAGES, DEMO_ANNOTATIONS } from '@/services/demoData';
 import ImageViewer from '@/components/ImageViewer';
 import EducationalPanel from '@/components/EducationalPanel';
 import toast from 'react-hot-toast';
@@ -34,17 +33,12 @@ export default function ImageDetail() {
   const loadImage = async () => {
     setLoading(true);
     try {
-      if (isDemoMode()) {
-        const img = DEMO_IMAGES.find((i) => i.id === Number(id)) || DEMO_IMAGES[0];
-        setImage(img);
-        setSelectedCategory(img.category || 'galaxy');
-      } else {
-        const response = await imageService.getImage(Number(id));
-        setImage(response.data);
-      }
+      const response = await imageService.getImage(Number(id));
+      setImage(response.data);
+      setSelectedCategory(response.data.category || 'galaxy');
     } catch {
-      const img = DEMO_IMAGES.find((i) => i.id === Number(id)) || DEMO_IMAGES[0];
-      setImage(img);
+      // Никакой подмены: нет снимка от сервера — нечего размечать.
+      setImage(null);
     } finally {
       setLoading(false);
     }
@@ -52,15 +46,10 @@ export default function ImageDetail() {
 
   const loadAnnotations = async () => {
     try {
-      if (isDemoMode()) {
-        const anns = DEMO_ANNOTATIONS.filter((a) => a.imageId === Number(id));
-        setAnnotations(anns);
-      } else {
-        const response = await annotationService.getImageAnnotations(Number(id));
-        setAnnotations(response.data);
-      }
+      const response = await annotationService.getImageAnnotations(Number(id));
+      setAnnotations(response.data ?? []);
     } catch {
-      setAnnotations(DEMO_ANNOTATIONS.filter((a) => a.imageId === Number(id)));
+      setAnnotations([]);
     }
   };
 
@@ -82,21 +71,26 @@ export default function ImageDetail() {
 
     setSaving(true);
     try {
-      if (!isDemoMode()) {
-        for (const ann of myAnnotations) {
-          await annotationService.createAnnotation({
-            imageId: Number(id),
-            type: ann.type as any,
-            coordinates: ann.coordinates,
-            category: ann.category,
-            confidence,
-            description: description || undefined,
-          });
-        }
+      // Очки объявляет сервер. Считать их на клиенте — значит рисовать число,
+      // за которым ничего не стоит.
+      let awarded = 0;
+      for (const ann of myAnnotations) {
+        const saved = await annotationService.createAnnotation({
+          imageId: Number(id),
+          type: ann.type as any,
+          coordinates: ann.coordinates,
+          category: ann.category,
+          confidence,
+          description: description || undefined,
+        });
+        awarded += saved.data?.pointsAwarded ?? 0;
       }
 
-      const points = myAnnotations.length * (confidence >= 4 ? 20 : 10);
-      toast.success(`Saved ${myAnnotations.length} annotations! +${points} points`);
+      toast.success(
+        awarded > 0
+          ? `Saved ${myAnnotations.length} annotations, +${awarded} points`
+          : `Saved ${myAnnotations.length} annotations`,
+      );
       setMyAnnotations([]);
       setDescription('');
       loadAnnotations();
@@ -120,7 +114,12 @@ export default function ImageDetail() {
   }
 
   if (!image) {
-    return null;
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <div className="text-2xl font-bold text-gray-500 mb-2">No data</div>
+        <p className="text-gray-400 text-sm">This image could not be loaded from the server.</p>
+      </div>
+    );
   }
 
   const allAnnotations = [
@@ -250,7 +249,11 @@ export default function ImageDetail() {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Total Annotations:</span>
-                <span className="font-semibold">{image.annotationCount}</span>
+                <span className="font-semibold">
+                  {typeof image.annotationCount === 'number'
+                    ? image.annotationCount
+                    : <span className="text-gray-500 font-normal">No data</span>}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Your Annotations:</span>

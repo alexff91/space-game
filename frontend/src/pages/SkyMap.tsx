@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { CONSTELLATIONS, type Constellation } from '@/services/demoData';
+import { CONSTELLATIONS, STAR_DATA_SOURCE, type Constellation } from '@/services/referenceData';
 import { MapPin, ZoomIn, ZoomOut, RotateCcw, Info, X, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -56,7 +56,9 @@ function magToRadius(mag: number, zoom: number): number {
   return base * Math.min(zoom * 0.4, 2.5);
 }
 
-// Background star field (random but deterministic)
+// Фон неба. ПОЧЕМУ это важно подписать в интерфейсе: эти точки сгенерированы
+// псевдослучайно, они не соответствуют ни одной настоящей звезде. Названные
+// звёзды созвездий — настоящие, фон — оформление, и путать их нельзя.
 function generateBackgroundStars(count: number): Array<{ ra: number; dec: number; mag: number }> {
   const stars: Array<{ ra: number; dec: number; mag: number }> = [];
   let seed = 42;
@@ -333,7 +335,13 @@ export default function SkyMap() {
           Interactive Sky Map
         </h1>
         <p className="text-gray-400 text-lg">
-          Explore the night sky — drag to pan, scroll to zoom, click stars for details
+          Drag to pan, scroll to zoom, click a star for its data
+        </p>
+        <p className="text-xs text-gray-500 mt-3 max-w-2xl mx-auto leading-relaxed">
+          Named stars use J2000 catalogue positions and visual magnitudes (
+          <a href={STAR_DATA_SOURCE} target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:text-primary-300">SIMBAD</a>
+          ). The faint background stars are generated decoration and do not correspond to
+          real stars — only the labelled ones do.
         </p>
       </div>
 
@@ -446,6 +454,7 @@ export default function SkyMap() {
           {/* Legend */}
           <div className="card">
             <h3 className="text-sm font-semibold mb-2">Star Colors</h3>
+            <p className="text-xs text-gray-500 mb-2">Approximate, by spectral type.</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="flex items-center space-x-2"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#a8d8ff' }} /><span>Blue (Hot)</span></div>
               <div className="flex items-center space-x-2"><div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ffffd0' }} /><span>White</span></div>

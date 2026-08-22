@@ -2,28 +2,25 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { imageService } from '@/services/imageService';
 import { Image } from '@/types';
-import { isDemoMode, DEMO_IMAGES } from '@/services/demoData';
 import { Sparkles, ChevronRight } from 'lucide-react';
 
 export default function Explore() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [currentImage, setCurrentImage] = useState<Image | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
+  // ПОЧЕМУ нет запасного набора снимков: подставлять свою картинку вместо
+  // ответа сервера — значит выдавать её за задание, которого сервер не давал.
   const loadRandomImage = async () => {
     setLoading(true);
+    setError(null);
     try {
-      if (isDemoMode()) {
-        const img = DEMO_IMAGES[Math.floor(Math.random() * DEMO_IMAGES.length)];
-        setCurrentImage(img);
-      } else {
-        const response = await imageService.getRandomImage();
-        setCurrentImage(response.data);
-      }
+      const response = await imageService.getRandomImage();
+      setCurrentImage(response.data);
     } catch {
-      // Fall back to demo data
-      const img = DEMO_IMAGES[Math.floor(Math.random() * DEMO_IMAGES.length)];
-      setCurrentImage(img);
+      setCurrentImage(null);
+      setError('No data — the server did not return an image.');
     } finally {
       setLoading(false);
     }
@@ -55,9 +52,17 @@ export default function Explore() {
           Explore the Cosmos
         </h1>
         <p className="text-gray-400 text-base sm:text-lg">
-          Analyze astronomical images and contribute to real space research
+          Mark what you see; your annotations are stored in this platform&apos;s database
         </p>
       </div>
+
+      {!loading && error && (
+        <div className="card max-w-lg mx-auto text-center py-12">
+          <div className="text-2xl font-bold text-gray-500 mb-2">No data</div>
+          <p className="text-gray-400 text-sm mb-6">{error}</p>
+          <button onClick={loadRandomImage} className="btn-primary">Try again</button>
+        </div>
+      )}
 
       {currentImage && (
         <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
@@ -155,7 +160,7 @@ export default function Explore() {
                 </li>
                 <li className="flex items-start">
                   <ChevronRight className="w-5 h-5 text-primary-400 mr-2 flex-shrink-0 mt-0.5" />
-                  <span>Help scientists discover new phenomena</span>
+                  <span>Record how confident you are, so disagreements are visible</span>
                 </li>
               </ul>
 

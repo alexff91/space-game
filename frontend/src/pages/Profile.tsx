@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { userService } from '@/services/userService';
-import { User, Award, BarChart3, Target, ArrowRight } from 'lucide-react';
+import { User, Award, BarChart3, Target } from 'lucide-react';
 import { getProgressToNextLevel, getNextLevelXP } from '@/utils/constants';
-import { isDemoMode, DEMO_USER_STATS, DEMO_ANNOTATIONS, DEMO_ACHIEVEMENTS } from '@/services/demoData';
+
+/**
+ * ПОЧЕМУ убраны запасные данные: при любой ошибке страница подставляла
+ * фиксированный набор — 87 разметок, 64 подтверждённых, разбивку по категориям
+ * и «точность 74%». Ни одно из этих чисел никто не считал. Теперь при
+ * отсутствии ответа сервера здесь пусто и написано, что данных нет.
+ */
 
 export default function Profile() {
   const { user } = useAuthStore();
   const [stats, setStats] = useState<any>(null);
   const [recentAnnotations, setRecentAnnotations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
 
   useEffect(() => {
     loadStats();
@@ -19,14 +25,11 @@ export default function Profile() {
 
   const loadStats = async () => {
     try {
-      if (isDemoMode()) {
-        setStats(DEMO_USER_STATS);
-      } else {
-        const response = await userService.getUserStats();
-        setStats(response.data);
-      }
+      const response = await userService.getUserStats();
+      setStats(response.data);
     } catch {
-      setStats(DEMO_USER_STATS);
+      setStats(null);
+      setStatsError(true);
     } finally {
       setLoading(false);
     }
@@ -34,18 +37,11 @@ export default function Profile() {
 
   const loadRecentAnnotations = async () => {
     try {
-      if (isDemoMode()) {
-        setRecentAnnotations(DEMO_ANNOTATIONS.slice(0, 5).map((a) => ({
-          ...a,
-          image: { title: `Image #${a.imageId}`, thumbnailUrl: undefined, imageUrl: undefined },
-        })));
-      } else {
-        const { annotationService } = await import('@/services/annotationService');
-        const response = await annotationService.getUserAnnotations(1, 5);
-        setRecentAnnotations(response.data);
-      }
+      const { annotationService } = await import('@/services/annotationService');
+      const response = await annotationService.getUserAnnotations(1, 5);
+      setRecentAnnotations(response.data ?? []);
     } catch {
-      setRecentAnnotations(DEMO_ANNOTATIONS.slice(0, 5));
+      setRecentAnnotations([]);
     }
   };
 
@@ -61,8 +57,6 @@ export default function Profile() {
     ? getProgressToNextLevel(user.experience, user.level)
     : 0;
   const nextLevelXP = user ? getNextLevelXP(user.level) : 0;
-
-  const unlockedAchievements = DEMO_ACHIEVEMENTS.filter((a) => a.unlockedAt).slice(0, 4);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -105,7 +99,7 @@ export default function Profile() {
                 </div>
                 <div className="bg-space-dark p-4 rounded-lg text-center">
                   <div className="text-3xl font-bold text-purple-400">
-                    {stats?.achievementCount || 0}
+                    {stats ? stats.achievementCount : <span className="text-base text-gray-500">No data</span>}
                   </div>
                   <div className="text-sm text-gray-400">Achievements</div>
                 </div>
@@ -113,25 +107,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Recent achievements */}
-          {isDemoMode() && unlockedAchievements.length > 0 && (
-            <div className="card">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold">Recent Badges</h3>
-                <Link to="/achievements" className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
-                  View All <ArrowRight className="w-3 h-3" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                {unlockedAchievements.map((a) => (
-                  <div key={a.id} className={`p-2 rounded-lg text-center text-xs badge-${a.rarity} bg-space-dark`}>
-                    <div className="font-semibold truncate">{a.name}</div>
-                    <div className="text-gray-500">+{a.points} pts</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Stats */}
@@ -145,7 +120,7 @@ export default function Profile() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
-                    {stats?.annotationCount || 0}
+                    {stats ? stats.annotationCount : <span className="text-base text-gray-500">No data</span>}
                   </div>
                   <div className="text-sm text-gray-400">Annotations</div>
                 </div>
@@ -159,7 +134,7 @@ export default function Profile() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
-                    {stats?.validatedCount || 0}
+                    {stats ? stats.validatedCount : <span className="text-base text-gray-500">No data</span>}
                   </div>
                   <div className="text-sm text-gray-400">Validated</div>
                 </div>
@@ -173,12 +148,9 @@ export default function Profile() {
                 </div>
                 <div>
                   <div className="text-2xl font-bold">
-                    {stats?.validatedCount > 0
-                      ? Math.round(
-                          (stats.validatedCount / stats.annotationCount) * 100
-                        )
-                      : 0}
-                    %
+                    {stats && stats.annotationCount > 0
+                      ? `${Math.round((stats.validatedCount / stats.annotationCount) * 100)}%`
+                      : <span className="text-base text-gray-500">No data</span>}
                   </div>
                   <div className="text-sm text-gray-400">Accuracy</div>
                 </div>
@@ -212,7 +184,9 @@ export default function Profile() {
               </div>
             ) : (
               <p className="text-gray-400 text-center py-8">
-                No annotations yet. Start exploring to build your stats!
+                {statsError
+                  ? 'No data — the server did not return your statistics.'
+                  : 'No annotations yet. Start exploring to build your stats.'}
               </p>
             )}
           </div>

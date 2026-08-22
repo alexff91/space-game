@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Eye, Search, Star, Moon, Sun, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
-import { ASTRONOMICAL_EVENTS, type AstronomicalEvent } from '@/services/demoData';
+import { ASTRONOMICAL_EVENTS, EVENTS_VERIFIED_ON, type AstronomicalEvent } from '@/services/referenceData';
 
 /**
  * Astronomical Events Calendar — displays upcoming celestial events
@@ -76,7 +76,15 @@ export default function Events() {
           Astronomical Events
         </h1>
         <p className="text-gray-400 text-lg">
-          Never miss a celestial event — plan your stargazing sessions
+          Eclipses, meteor showers and oppositions for 2026
+        </p>
+        {/* ПОЧЕМУ подпись: 5 из 12 дат в прежнем списке были неверны.
+            Дата сверки и ссылка на источник — то, чем читатель может это
+            проверить, не веря нам на слово. */}
+        <p className="text-xs text-gray-500 mt-3 max-w-2xl mx-auto leading-relaxed">
+          Every date below was checked by hand against a published source on {EVENTS_VERIFIED_ON}
+          {' '}(NASA GSFC eclipse tables, in-the-sky.org). Open an event to see its source link.
+          Events that could not be checked are not listed.
         </p>
       </div>
 
@@ -210,6 +218,15 @@ export default function Events() {
                                 {config.label}
                               </div>
                             </div>
+                            <a
+                              href={event.source}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-block text-xs text-primary-400 hover:text-primary-300 underline decoration-dotted"
+                            >
+                              Check this date at the source
+                            </a>
                           </motion.div>
                         )}
                       </div>
@@ -223,7 +240,9 @@ export default function Events() {
 
         {events.length === 0 && (
           <div className="text-center py-20 text-gray-400">
-            No events found for {selectedYear} with the selected filter.
+            {selectedYear === 2026
+              ? 'No events match the selected filter.'
+              : `No data — only 2026 has been checked against a source. Nothing is listed for ${selectedYear}.`}
           </div>
         )}
       </div>

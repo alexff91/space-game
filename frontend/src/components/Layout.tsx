@@ -1,11 +1,22 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
+import DemoBanner from './DemoBanner';
 import { Rocket } from 'lucide-react';
+import { isDemoMode } from '@/services/appMode';
 
 export default function Layout() {
+  const demo = isDemoMode();
+
   return (
     <div className="min-h-screen bg-space-gradient flex flex-col">
-      <Navbar />
+      {/* Плашка идёт до навигации и без условий — она должна быть видна всегда,
+          на каждой странице. Скрывать её умеет только сам компонент, и только
+          когда бэкенд действительно настроен. Прилипают плашка и меню вместе,
+          иначе одно перекрывает другое при прокрутке. */}
+      <div className="sticky top-0 z-50">
+        <DemoBanner />
+        <Navbar />
+      </div>
       <main className="container mx-auto px-4 py-6 sm:py-8 flex-1">
         <Outlet />
       </main>
@@ -21,8 +32,9 @@ export default function Layout() {
                 </span>
               </div>
               <p className="text-gray-500 leading-relaxed">
-                Citizen science platform for astronomical image analysis.
-                Help researchers discover the secrets of the cosmos.
+                {demo
+                  ? 'A browser front end for looking at public astronomical data. No backend, no accounts, no data collected.'
+                  : 'An image-annotation platform for astronomical images. Annotations are stored in this platform\'s own database.'}
               </p>
             </div>
 
@@ -33,24 +45,23 @@ export default function Layout() {
                 <li><a href="/sky-map" className="hover:text-primary-400 transition-colors">Interactive Sky Map</a></li>
                 <li><a href="/gallery" className="hover:text-primary-400 transition-colors">Space Gallery</a></li>
                 <li><a href="/events" className="hover:text-primary-400 transition-colors">Astronomical Events</a></li>
-                <li><a href="/leaderboard" className="hover:text-primary-400 transition-colors">Leaderboard</a></li>
               </ul>
             </div>
 
             {/* Data */}
             <div>
-              <h4 className="font-semibold text-gray-300 mb-3">Data Sources</h4>
+              <h4 className="font-semibold text-gray-300 mb-3">Where the data comes from</h4>
               <ul className="space-y-2 text-gray-500">
-                <li><a href="https://api.nasa.gov" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">NASA Open APIs</a></li>
-                <li><a href="https://www.esa.int/Science_Exploration/Space_Science" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">ESA Science</a></li>
-                <li><a href="https://hubblesite.org" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">Hubble Space Telescope</a></li>
-                <li><a href="https://webbtelescope.org" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">James Webb Space Telescope</a></li>
+                <li><a href="https://api.nasa.gov/#apod" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">NASA APOD API — gallery images</a></li>
+                <li><a href="https://eclipse.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">NASA GSFC eclipse tables — eclipse dates</a></li>
+                <li><a href="https://in-the-sky.org/newscal.php" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">in-the-sky.org — other event dates</a></li>
+                <li><a href="https://simbad.cds.unistra.fr/simbad/" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">SIMBAD — star positions and magnitudes</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-primary-900/20 mt-8 pt-6 text-center text-xs text-gray-600">
-            AstroQuest {new Date().getFullYear()} | Built with React, TypeScript & NASA Open Data
+            AstroQuest {new Date().getFullYear()} | Built with React and TypeScript. Not affiliated with NASA or ESA.
           </div>
         </div>
       </footer>
