@@ -102,6 +102,43 @@ To add real screenshots:
 
 > Earlier versions filled these pages with invented data instead: a signed-in user with 4,250 points, a twelve-person leaderboard of people who do not exist, counters reading "10K+ images analysed", and eight NASA image links whose filenames were made up (all eight returned 404). None of that is in the codebase any more, and `frontend/src/__tests__/honesty.test.tsx` fails if it comes back.
 
+### Arcade: Star Defender
+A juicy, self-contained canvas mini-game at **`/arcade`** — a quick break from
+the science, no backend required.
+
+- **Escalating difficulty waves** with more (and tougher) enemies each round,
+  plus a **mini-boss every 5th wave**
+- **"Juice" pass**: screen shake on impacts, particle explosions, a subtle
+  parallax starfield, and a synthesized WebAudio soundtrack of effects
+- **Persistent local leaderboard** — top 10 scores with 3-letter initials,
+  saved to `localStorage` so they survive reloads
+- **Pause/resume** and a **mute** toggle
+- **Frame-rate independent**: the entire simulation is delta-time based, so it
+  plays consistently on 60 Hz, 120 Hz, or throttled background tabs
+
+```
+┌──────── Star Defender ────────┐
+│  *      .       *      ▲      │   ▲ enemy   ◣ mini-boss
+│      ◣◣◣◣◣      .         *   │   △ you     · bullets/stars
+│   ·   ·    *        ·         │
+│  *        △        .     *    │   Survive the waves, beat the boss,
+│        ·  ‖  ·                │   and carve your initials into the
+│   *           .      *        │   top of the leaderboard.
+└───────────────────────────────┘
+```
+
+#### Controls
+
+| Action          | Keys                          |
+| --------------- | ----------------------------- |
+| Move            | `←` `↑` `↓` `→` or `W` `A` `S` `D` |
+| Fire            | `Space`                       |
+| Pause / Resume  | `P` (or the on-screen button) |
+| Mute / Unmute   | `M` (or the on-screen button) |
+
+> Tip: the screenshot above is ASCII art for now — drop a real GIF at
+> `docs/arcade.gif` and reference it here to show the game in motion.
+
 ---
 
 ## Architecture

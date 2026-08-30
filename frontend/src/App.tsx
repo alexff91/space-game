@@ -11,6 +11,7 @@ import Leaderboard from '@/pages/Leaderboard';
 import ImageDetail from '@/pages/ImageDetail';
 import Missions from '@/pages/Missions';
 import SkyMap from '@/pages/SkyMap';
+import Arcade from '@/pages/Arcade';
 import Gallery from '@/pages/Gallery';
 import Events from '@/pages/Events';
 import PrivateRoute from '@/components/PrivateRoute';
@@ -52,6 +53,7 @@ function App() {
           <Route path="login" element={gated(<Login />, 'Signing in')} />
           <Route path="register" element={gated(<Register />, 'Registration')} />
           <Route path="sky-map" element={<SkyMap />} />
+          <Route path="arcade" element={<Arcade />} />
           <Route path="gallery" element={<Gallery />} />
           <Route path="events" element={<Events />} />
           <Route path="leaderboard" element={gated(<Leaderboard />, 'The leaderboard')} />

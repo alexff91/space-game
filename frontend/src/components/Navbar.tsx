@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import {
   Rocket, User, Trophy, LogOut, Star, Target, MapPin, Camera,
-  Calendar, Menu, X,
+  Calendar, Menu, X, Gamepad2,
 } from 'lucide-react';
 import { isDemoMode } from '@/services/appMode';
 
@@ -21,6 +21,7 @@ const NAV_LINKS: NavLink[] = [
   { to: '/explore', icon: <Star className="w-5 h-5" />, label: 'Explore', authRequired: true, backendRequired: true },
   { to: '/missions', icon: <Target className="w-5 h-5" />, label: 'Missions', authRequired: true, backendRequired: true },
   { to: '/sky-map', icon: <MapPin className="w-5 h-5" />, label: 'Sky Map' },
+  { to: '/arcade', icon: <Gamepad2 className="w-5 h-5" />, label: 'Arcade' },
   { to: '/gallery', icon: <Camera className="w-5 h-5" />, label: 'Gallery' },
   { to: '/events', icon: <Calendar className="w-5 h-5" />, label: 'Events' },
   { to: '/leaderboard', icon: <Trophy className="w-5 h-5" />, label: 'Leaderboard', backendRequired: true },
