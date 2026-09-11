@@ -1,8 +1,12 @@
-import { AlertTriangle } from 'lucide-react';
 import { isDemoMode } from '@/services/appMode';
 
 /**
  * Постоянная плашка о том, что бэкенда нет.
+ *
+ * Была жёлтой на весь экран, с перечислением всего, чего здесь нет. Второе
+ * мнение (GPT, 12.09.2026): плашка подавляла продукт, а «ничего никуда не
+ * уходит» неправда при живых запросах к NASA. Теперь одна строка в тон
+ * шапки; несъёмность оставлена — ради неё плашка и существует.
  *
  * ПОЧЕМУ не всплывающее окно: окно закрывают на первом экране и дальше
  * человек час размечает снимки, считая, что помогает науке. Плашка липнет
@@ -16,18 +20,12 @@ export default function DemoBanner() {
   return (
     <div
       role="status"
-      className="bg-amber-500 text-amber-950 border-b border-amber-700"
+      className="bg-slate-800/80 text-slate-200 border-b border-slate-700"
     >
-      <div className="container mx-auto px-4 py-2 flex items-start gap-2 text-xs sm:text-sm">
-        <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" aria-hidden="true" />
-        <p className="leading-snug">
-          <span className="font-bold uppercase tracking-wide">Demo build — no backend.</span>{' '}
-          Nothing is saved and nothing is sent anywhere — not to a server, not to
-          any researcher. There are no scores, no leaderboard and no accounts. The images
-          come live from NASA&apos;s public APOD API; everything else on this site is
-          reference data with its source cited, or it is not shown at all.
-        </p>
-      </div>
+      <p className="container mx-auto px-4 py-1.5 text-xs sm:text-sm leading-snug">
+        <span className="font-semibold">Demo.</span> Nothing you do here is saved
+        or sent anywhere. Images load live from NASA.
+      </p>
     </div>
   );
 }
